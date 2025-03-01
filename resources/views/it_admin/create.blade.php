@@ -11,33 +11,39 @@
     <form method="POST" action="{{ route('it_admin.store') }}">
         @csrf
 
-        <div class="form-group">
-            <label for="employee_id">Employee ID</label>
+        <!-- Employee ID -->
+        <div class="mb-3">
+            <label for="employee_id" class="form-label">Employee ID</label>
             <input type="text" class="form-control" id="employee_id" name="employee_id" required>
         </div>
 
-        <div class="form-group">
-            <label for="lastname">Last Name</label>
+        <!-- Last Name -->
+        <div class="mb-3">
+            <label for="lastname" class="form-label">Last Name</label>
             <input type="text" class="form-control" id="lastname" name="lastname" required>
         </div>
 
-        <div class="form-group">
-            <label for="firstname">First Name</label>
+        <!-- First Name -->
+        <div class="mb-3">
+            <label for="firstname" class="form-label">First Name</label>
             <input type="text" class="form-control" id="firstname" name="firstname" required>
         </div>
 
-        <div class="form-group">
-            <label for="middlename">Middle Name (Optional)</label>
+        <!-- Middle Name (Optional) -->
+        <div class="mb-3">
+            <label for="middlename" class="form-label">Middle Name (Optional)</label>
             <input type="text" class="form-control" id="middlename" name="middlename">
         </div>
 
-        <div class="form-group">
-            <label for="email">Email Address (Username)</label>
+        <!-- Email Address -->
+        <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
             <input type="email" class="form-control" id="email" name="email" required>
         </div>
 
-        <div class="form-group">
-            <label for="role">Role</label>
+        <!-- Role Selection -->
+        <div class="mb-3">
+            <label for="role" class="form-label">Role</label>
             <select class="form-control" id="role" name="role" required>
                 <option value="0">Staff</option>
                 <option value="1">Purchasing Officer</option>
@@ -48,8 +54,9 @@
             </select>
         </div>
 
-        <div class="form-group">
-            <label for="designation">Designation</label>
+        <!-- Designation -->
+        <div class="mb-3">
+            <label for="designation" class="form-label">Designation</label>
             <input type="text" class="form-control" id="designation" name="designation" required>
         </div>
 

@@ -5,39 +5,49 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
 
 class ITAdminController extends Controller
 {
+    /**
+     * Show the user creation form.
+     */
     public function create()
     {
         return view('it_admin.create');
     }
 
+    /**
+     * Store a new user.
+     */
     public function store(Request $request)
     {
+        // Validate request data
         $request->validate([
-            'employee_id' => 'required|unique:users',
-            'lastname' => 'required',
-            'firstname' => 'required',
-            'email' => 'required|email|unique:users',
-            'role' => 'required|integer',
-            'designation' => 'required',
+            'employee_id' => ['required', 'string', 'max:255', 'unique:users'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'middlename' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users'],
+            'role' => ['required', 'integer'],
+            'designation' => ['required', 'string', 'max:255'],
         ]);
 
         // Generate a temporary password
-        $tempPassword = 'temp' . rand(1000, 9999);
+        $tempPassword = 'Temp' . rand(1000, 9999);
 
-        User::create([
+        // Create the user
+        $user = User::create([
             'employee_id' => $request->employee_id,
             'lastname' => $request->lastname,
             'firstname' => $request->firstname,
             'middlename' => $request->middlename,
-            'email' => $request->email,
+            'email' => strtolower($request->email),
             'password' => Hash::make($tempPassword),
             'role' => $request->role,
             'designation' => $request->designation,
         ]);
 
-        return redirect()->back()->with('success', 'User created successfully. Temporary password: ' . $tempPassword);
+        return redirect()->back()->with('success', 'User created successfully! Temporary password: ' . $tempPassword);
     }
 }

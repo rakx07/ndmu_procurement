@@ -69,6 +69,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:5'])->group(function () {
         Route::get('/it-admin/create', [ITAdminController::class, 'create'])->name('it_admin.create');
         Route::post('/it-admin/store', [ITAdminController::class, 'store'])->name('it_admin.store');
+        Route::get('/user-management', [ITAdminController::class, 'index'])->name('user.management');
     });
 
     /*

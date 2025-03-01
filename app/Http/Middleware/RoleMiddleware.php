@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
+    /**
+     * Handle an incoming request.
+     */
     public function handle(Request $request, Closure $next, $role)
     {
         if (!Auth::check() || Auth::user()->role != $role) {

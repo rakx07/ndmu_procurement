@@ -60,7 +60,8 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'auth' => Authenticate::class,
-        'role' => RoleMiddleware::class, // Role-based access control
+        // 'role' => RoleMiddleware::class, // Role-based access control
+        'role' => \App\Http\Middleware\RoleMiddleware::class, // Ensure this line exists
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => SubstituteBindings::class,
         'cache.headers' => SetCacheHeaders::class,

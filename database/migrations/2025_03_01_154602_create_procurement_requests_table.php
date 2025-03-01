@@ -11,7 +11,7 @@ class CreateProcurementRequestsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('requestor_id');
             $table->string('office');
-            $table->string('designation');
+
             $table->date('date_requested');
             $table->enum('status', ['pending', 'supervisor_approved', 'admin_approved', 'comptroller_approved', 'purchased', 'rejected'])->default('pending');
             $table->text('remarks')->nullable();

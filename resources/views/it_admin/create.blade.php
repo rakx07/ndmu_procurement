@@ -1,53 +1,57 @@
 @extends('layouts.appitadmin')
 
 @section('content')
-<div class="max-w-4xl mx-auto p-6">
-    <h2 class="text-2xl font-bold text-[var(--primary-dark-green)] mb-4">Create New User</h2>
+<div class="container px-4 py-6 mx-auto">
+    <h2 class="text-2xl font-bold text-green-700 text-center mb-6 uppercase">Create New User</h2>
 
     @if(session('success'))
-        <div class="bg-green-500 text-white p-2 rounded mb-4">
+        <script>
+            alert("Staff successfully added!");
+        </script>
+        <div class="alert alert-success text-center p-2 rounded-lg mb-3">
             {{ session('success') }}
         </div>
     @endif
 
-    <form method="POST" action="{{ route('it_admin.store') }}" class="bg-white p-6 shadow-lg rounded-lg">
+    <form method="POST" action="{{ route('it_admin.store') }}" id="userForm" class="bg-white p-6 rounded-lg shadow-md">
         @csrf
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Employee ID -->
-            <div>
-                <label for="employee_id" class="block text-sm font-semibold text-gray-700">Employee ID</label>
-                <input type="text" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--secondary-light-green)]" id="employee_id" name="employee_id" required>
+        <div class="row g-3">
+            <!-- Employee ID & Email -->
+            <div class="col-md-6">
+                <label for="employee_id" class="form-label fw-bold">Employee ID</label>
+                <input type="text" id="employee_id" name="employee_id" required 
+                    class="form-control required-field">
+            </div>
+            <div class="col-md-6">
+                <label for="email" class="form-label fw-bold">Email Address</label>
+                <input type="email" id="email" name="email" required 
+                    class="form-control required-field">
             </div>
 
-            <!-- Last Name -->
-            <div>
-                <label for="lastname" class="block text-sm font-semibold text-gray-700">Last Name</label>
-                <input type="text" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--secondary-light-green)]" id="lastname" name="lastname" required>
+            <!-- Last Name, First Name, Middle Name -->
+            <div class="col-md-6">
+                <label for="lastname" class="form-label fw-bold">Last Name</label>
+                <input type="text" id="lastname" name="lastname" required 
+                    class="form-control required-field">
+            </div>
+            <div class="col-md-6">
+                <label for="firstname" class="form-label fw-bold">First Name</label>
+                <input type="text" id="firstname" name="firstname" required 
+                    class="form-control required-field">
+            </div>
+            <div class="col-md-6">
+                <label for="middlename" class="form-label fw-bold">Middle Name (Optional)</label>
+                <input type="text" id="middlename" name="middlename" 
+                    class="form-control">
             </div>
 
-            <!-- First Name -->
-            <div>
-                <label for="firstname" class="block text-sm font-semibold text-gray-700">First Name</label>
-                <input type="text" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--secondary-light-green)]" id="firstname" name="firstname" required>
-            </div>
 
-            <!-- Middle Name -->
-            <div>
-                <label for="middlename" class="block text-sm font-semibold text-gray-700">Middle Name (Optional)</label>
-                <input type="text" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--secondary-light-green)]" id="middlename" name="middlename">
-            </div>
-
-            <!-- Email -->
-            <div class="col-span-2">
-                <label for="email" class="block text-sm font-semibold text-gray-700">Email Address</label>
-                <input type="email" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--secondary-light-green)]" id="email" name="email" required>
-            </div>
-
-            <!-- Role -->
-            <div>
-                <label for="role" class="block text-sm font-semibold text-gray-700">Role</label>
-                <select class="w-full p-2 border rounded-lg bg-white focus:ring-2 focus:ring-[var(--secondary-light-green)]" id="role" name="role" required>
+            <div class="col-md-6">
+                <label for="role" class="form-label fw-bold">Role</label>
+                <select id="role" name="role" required 
+                    class="form-select required-field">
+                    <option value="">Select Role</option>
                     <option value="0">Staff</option>
                     <option value="1">Purchasing Officer</option>
                     <option value="2">Supervisor</option>
@@ -56,17 +60,51 @@
                     <option value="5">IT Admin</option>
                 </select>
             </div>
-
-            <!-- Designation -->
-            <div>
-                <label for="designation" class="block text-sm font-semibold text-gray-700">Designation</label>
-                <input type="text" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[var(--secondary-light-green)]" id="designation" name="designation" required>
-            </div>
         </div>
 
-        <button type="submit" class="mt-6 w-full bg-[var(--primary-dark-green)] text-white py-2 px-4 rounded-lg hover:bg-[var(--hover-green)] transition">
-            Create User
-        </button>
+        <!-- Buttons Section -->
+        <div class="mt-4 text-center">
+            <!-- Cancel Button -->
+            <a href="{{ url()->previous() }}" class="btn btn-secondary px-4">Cancel</a>
+
+            <!-- Save Button -->
+            <button type="submit" id="submitBtn" class="btn btn-primary px-4" disabled>Save</button>
+        </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('userForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const requiredFields = document.querySelectorAll('.required-field');
+
+        function checkFormCompletion() {
+            let isComplete = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isComplete = false;
+                }
+            });
+
+            if (isComplete) {
+                submitBtn.classList.remove('btn-secondary', 'disabled');
+                submitBtn.classList.add('btn-primary');
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.classList.remove('btn-primary');
+                submitBtn.classList.add('btn-secondary', 'disabled');
+                submitBtn.disabled = true;
+            }
+        }
+
+        requiredFields.forEach(field => {
+            field.addEventListener('input', checkFormCompletion);
+            field.addEventListener('change', checkFormCompletion);
+        });
+
+        checkFormCompletion(); // Run on page load in case form is pre-filled
+    });
+</script>
 @endsection

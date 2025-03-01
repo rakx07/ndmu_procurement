@@ -51,12 +51,6 @@
             <x-input-error :messages="$errors->get('role')" class="mt-2" />
         </div>
 
-        <!-- Designation -->
-        <div class="mt-4">
-            <x-input-label for="designation" :value="__('Designation')" />
-            <x-text-input id="designation" class="block mt-1 w-full" type="text" name="designation" :value="old('designation')" required />
-            <x-input-error :messages="$errors->get('designation')" class="mt-2" />
-        </div>
 
         <!-- Password -->
         <div class="mt-4">

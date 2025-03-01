@@ -60,6 +60,13 @@ Route::middleware(['auth'])->group(function () {
         ->name('change_password_form');
     Route::post('/change-password', [ChangePasswordController::class, 'updatePassword'])
         ->name('update_password');
+        Route::get('/settings', function () {
+            return view('settings'); // Ensure settings.blade.php exists in resources/views
+        })->name('settings');
+        Route::get('/settings', function () {
+            return view('settings');
+        })->name('settings');
+        
 
     /*
     |--------------------------------------------------------------------------
@@ -70,6 +77,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/it-admin/create', [ITAdminController::class, 'create'])->name('it_admin.create');
         Route::post('/it-admin/store', [ITAdminController::class, 'store'])->name('it_admin.store');
         Route::get('/user-management', [ITAdminController::class, 'index'])->name('user.management');
+        Route::patch('/it_admin/toggleStatus/{id}', [ITAdminController::class, 'toggleStatus'])->name('it_admin.toggleStatus');
+        Route::patch('/it_admin/suspend/{id}', [ITAdminController::class, 'suspend'])->name('it_admin.suspend');
+        Route::get('/dashboard', [ITAdminController::class, 'index'])->name('dashboard'); // ✅ IT Admin Dashboard
     });
 
     /*
@@ -109,4 +119,13 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:3'])->group(function () {
         Route::get('audit-trails', [AuditTrailController::class, 'index'])->name('audit_trails.index');
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Settings Route
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/settings', function () {
+        return view('settings');
+    })->name('settings');
 });

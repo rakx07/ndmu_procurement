@@ -10,7 +10,7 @@ class ProcurementRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'requestor_id', 'office', 'designation', 'date_requested', 'status', 'remarks'
+        'requestor_id', 'office', 'date_requested', 'status', 'remarks'
     ];
 
     public function requestor()

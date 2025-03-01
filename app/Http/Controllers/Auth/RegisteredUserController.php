@@ -37,7 +37,6 @@ class RegisteredUserController extends Controller
             'middlename' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users'],
             'role' => ['required', 'integer'],
-            'designation' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -50,7 +49,7 @@ class RegisteredUserController extends Controller
             'email' => strtolower($request->email),
             'password' => Hash::make($request->password),
             'role' => $request->role,
-            'designation' => $request->designation,
+         
         ]);
 
         // Fire the Registered event (useful for email verification, etc.)

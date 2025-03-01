@@ -16,7 +16,6 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->integer('role')->default(0); // 0: Staff, 1: Purchasing Officer, 2: Supervisor, 3: Admin, 4: Comptroller, 5: IT Admin
-            $table->string('designation');
             $table->timestamps();
         });
     }

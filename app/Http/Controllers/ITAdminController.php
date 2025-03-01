@@ -30,7 +30,7 @@ class ITAdminController extends Controller
             'middlename' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users'],
             'role' => ['required', 'integer'],
-            'designation' => ['required', 'string', 'max:255'],
+            
         ]);
 
         // Generate a temporary password
@@ -45,9 +45,35 @@ class ITAdminController extends Controller
             'email' => strtolower($request->email),
             'password' => Hash::make($tempPassword),
             'role' => $request->role,
-            'designation' => $request->designation,
+          
         ]);
 
         return redirect()->back()->with('success', 'User created successfully! Temporary password: ' . $tempPassword);
     }
+    public function toggleStatus($id)
+{
+    $user = User::findOrFail($id);
+    $user->status = !$user->status; // Toggle active/inactive
+    $user->save();
+
+    return back()->with('success', 'User status updated successfully!');
+}
+
+public function suspend($id)
+{
+    $user = User::findOrFail($id);
+    $user->status = 0; // Set user as inactive/suspended
+    $user->save();
+
+    return back()->with('success', 'User suspended successfully!');
+}
+
+public function index()
+{
+    // Fetch all users
+    $users = User::all();
+
+    // Load 'it_admin/index.blade.php' as the IT Admin dashboard
+    return view('it_admin.index', compact('users'));
+}
 }

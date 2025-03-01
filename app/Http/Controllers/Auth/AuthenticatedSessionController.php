@@ -25,8 +25,14 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
+
+        $user = Auth::user();
+
+        // Check if the user must change their password (first-time login)
+        if (is_null($user->password_changed_at)) {
+            return redirect()->route('change_password_form')->with('warning', 'You must change your password before proceeding.');
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
@@ -39,7 +45,6 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

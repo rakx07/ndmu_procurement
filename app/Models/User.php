@@ -5,19 +5,60 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'designation'
+        'employee_id',
+        'lastname',
+        'firstname',
+        'middlename',
+        'email',
+        'password',
+        'role',
+        'designation',
+        'password_changed_at'
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 
+        'remember_token',
     ];
 
+    protected $casts = [
+        'password_changed_at' => 'datetime',
+    ];
+
+    /**
+     * Check if the user must change their password (first login)
+     */
+    public function mustChangePassword()
+    {
+        return is_null($this->password_changed_at);
+    }
+
+    /**
+     * Define user roles
+     */
+    public function isRole($role)
+    {
+        $roles = [
+            'staff' => 0,
+            'purchasing_officer' => 1,
+            'supervisor' => 2,
+            'admin' => 3,
+            'comptroller' => 4,
+            'it_admin' => 5,
+        ];
+        return $this->role === $roles[$role];
+    }
+
+    /**
+     * Relationships
+     */
     public function procurementRequests()
     {
         return $this->hasMany(ProcurementRequest::class, 'requestor_id');
@@ -38,16 +79,11 @@ class User extends Authenticatable
         return $this->hasMany(AuditTrail::class, 'user_id');
     }
 
-    public function isRole($role)
+    /**
+     * Set hashed password when saving
+     */
+    public function setPasswordAttribute($value)
     {
-        $roles = [
-            'staff' => 0,
-            'purchasing_officer' => 1,
-            'supervisor' => 2,
-            'admin' => 3,
-            'comptroller' => 4,
-            'it_admin' => 5,
-        ];
-        return $this->role === $roles[$role];
+        $this->attributes['password'] = Hash::make($value);
     }
 }

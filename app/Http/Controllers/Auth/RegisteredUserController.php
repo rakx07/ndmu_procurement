@@ -29,22 +29,37 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Validate the request
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'employee_id' => ['required', 'string', 'max:255', 'unique:users'],
+            'lastname' => ['required', 'string', 'max:255'],
+            'firstname' => ['required', 'string', 'max:255'],
+            'middlename' => ['nullable', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users'],
+            'role' => ['required', 'integer'],
+            'designation' => ['required', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Create the user
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'employee_id' => $request->employee_id,
+            'lastname' => $request->lastname,
+            'firstname' => $request->firstname,
+            'middlename' => $request->middlename,
+            'email' => strtolower($request->email),
             'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'designation' => $request->designation,
         ]);
 
+        // Fire the Registered event (useful for email verification, etc.)
         event(new Registered($user));
 
+        // Auto-login the user
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Redirect to dashboard
+        return redirect()->route('dashboard');
     }
 }

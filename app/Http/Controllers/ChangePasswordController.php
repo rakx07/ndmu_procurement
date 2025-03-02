@@ -9,18 +9,30 @@ use App\Models\User; // Ensure the User model is imported
 
 class ChangePasswordController extends Controller
 {
+    /**
+     * Show the password change form.
+     */
     public function showChangePasswordForm()
     {
         return view('auth.change_password');
     }
 
+    /**
+     * Handle password update request.
+     */
     public function updatePassword(Request $request)
     {
         $request->validate([
+            'current_password' => 'required',
             'password' => 'required|min:8|confirmed',
         ]);
 
         $user = Auth::user();
+
+        // Check if the current password is correct
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+        }
 
         // Ensure $user is an instance of User before calling save()
         if ($user instanceof User) {

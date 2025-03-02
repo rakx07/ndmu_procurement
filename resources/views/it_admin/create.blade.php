@@ -5,12 +5,13 @@
     <h2 class="text-2xl font-bold text-green-700 text-center mb-6 uppercase">Create New User</h2>
 
     @if(session('success'))
-        <script>
-            alert("Staff successfully added!");
-        </script>
-        <div class="alert alert-success text-center p-2 rounded-lg mb-3">
-            {{ session('success') }}
-        </div>
+    <div class="alert alert-success alert-dismissible fade show text-center p-2 rounded-lg mb-3" role="alert">
+        <strong>User Created Successfully!</strong> <br>
+        @if(session('temp_password'))
+            Temporary Password: <strong>{{ session('temp_password') }}</strong>
+        @endif
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     @endif
 
     <form method="POST" action="{{ route('it_admin.store') }}" id="userForm" class="bg-white p-6 rounded-lg shadow-md">
@@ -46,11 +47,10 @@
                     class="form-control">
             </div>
 
-
+            <!-- Role -->
             <div class="col-md-6">
                 <label for="role" class="form-label fw-bold">Role</label>
-                <select id="role" name="role" required 
-                    class="form-select required-field">
+                <select id="role" name="role" required class="form-select required-field">
                     <option value="">Select Role</option>
                     <option value="0">Staff</option>
                     <option value="1">Purchasing Officer</option>
@@ -58,6 +58,17 @@
                     <option value="3">Administrator</option>
                     <option value="4">Comptroller</option>
                     <option value="5">IT Admin</option>
+                </select>
+            </div>
+
+            <!-- Office Dropdown -->
+            <div class="col-md-6">
+                <label for="office_id" class="form-label fw-bold">Office</label>
+                <select id="office_id" name="office_id" required class="form-select required-field">
+                    <option value="">Select Office</option>
+                    @foreach($offices as $office)
+                        <option value="{{ $office->id }}">{{ $office->name }}</option>
+                    @endforeach
                 </select>
             </div>
         </div>

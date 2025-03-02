@@ -19,8 +19,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'office',
-
+        'office_id',  // ✅ Fixed field name
+        'status',
         'password_changed_at'
     ];
 
@@ -81,28 +81,39 @@ class User extends Authenticatable
     }
 
     /**
-     * Set hashed password when saving
+     * Ensure password is only hashed once when saving
      */
     public function setPasswordAttribute($value)
     {
-        $this->attributes['password'] = Hash::make($value);
+        if (Hash::needsRehash($value)) {
+            $this->attributes['password'] = Hash::make($value);
+        } else {
+            $this->attributes['password'] = $value;
+        }
     }
+
+    /**
+     * Relationship with Office
+     */
     public function office()
-{
-    return $this->belongsTo(Office::class);
-}   
-public function roleText()
-{
-    $roles = [
-        0 => 'Staff',
-        1 => 'Purchasing Officer',
-        2 => 'Supervisor',
-        3 => 'Administrator',
-        4 => 'Comptroller',
-        5 => 'IT Admin',
-    ];
+    {
+        return $this->belongsTo(Office::class);
+    }   
 
-    return $roles[$this->role] ?? 'Unknown';
-}
+    /**
+     * Get role text
+     */
+    public function roleText()
+    {
+        $roles = [
+            0 => 'Staff',
+            1 => 'Purchasing Officer',
+            2 => 'Supervisor',
+            3 => 'Administrator',
+            4 => 'Comptroller',
+            5 => 'IT Admin',
+        ];
 
+        return $roles[$this->role] ?? 'Unknown';
+    }
 }

@@ -16,10 +16,12 @@ class CreateUsersTable extends Migration
             $table->string('middlename')->nullable();
             $table->string('email')->unique();
             $table->string('password');
-            $table->integer('role')->default(0); // 0: Staff, 1: Purchasing Officer, 2: Supervisor, 3: Admin, 4: Comptroller, 5: IT Admin
-            $table->foreignId('office_id')->constrained('offices')->onDelete('cascade'); // Foreign key
+            $table->integer('role')->default(0);
+            $table->foreignId('office_id')->nullable()->constrained('offices')->onDelete('cascade'); // ✅ Nullable
+            $table->tinyInteger('status')->default(1);
             $table->timestamps();
         });
+        
     }
 
     public function down()

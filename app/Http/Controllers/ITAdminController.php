@@ -73,27 +73,33 @@ class ITAdminController extends Controller
      * Update a user.
      */
     public function update(Request $request, $id)
-    {
-        // Validate request data
-        $request->validate([
-            'employee_id' => 'required|string|max:255|unique:users,employee_id,' . $id,
-            'lastname' => 'required|string|max:255',
-            'firstname' => 'required|string|max:255',
-            'middlename' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $id,
-            'role' => 'required|integer',
-            'office_id' => 'required|exists:offices,id',
-            'status' => 'required|boolean',
-        ]);
+{
+    $request->validate([
+        'employee_id' => 'required|string|max:255|unique:users,employee_id,' . $id,
+        'lastname' => 'required|string|max:255',
+        'firstname' => 'required|string|max:255',
+        'middlename' => 'nullable|string|max:255',
+        'email' => 'required|email|max:255|unique:users,email,' . $id,
+        'role' => 'required|integer',
+        'office_id' => 'required|exists:offices,id',
+        'status' => 'required|boolean', // ✅ Ensure status is validated
+    ]);
 
-        // Find the user
-        $user = User::findOrFail($id);
+    $user = User::findOrFail($id);
+    $user->update([
+        'employee_id' => $request->employee_id,
+        'lastname' => $request->lastname,
+        'firstname' => $request->firstname,
+        'middlename' => $request->middlename,
+        'email' => $request->email,
+        'role' => $request->role,
+        'office_id' => $request->office_id,
+        'status' => $request->status, // ✅ Ensure status is updated
+    ]);
 
-        // Update user details
-        $user->update($request->all());
+    return back()->with('success', 'User updated successfully!');
+}
 
-        return back()->with('success', 'User updated successfully!');
-    }
 
     /**
      * Toggle a user's active/inactive status.

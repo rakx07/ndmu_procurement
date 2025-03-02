@@ -2,57 +2,61 @@
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">User Management (IT Admin Dashboard)</h2>
+    <h2 class="mb-4 text-center">User Management (IT Admin Dashboard)</h2>
 
-    <table class="table table-bordered">
-        <thead class="thead-dark">
-            <tr>
-                <th>#</th>
-                <th>Employee ID</th>
-                <th>Last Name</th>
-                <th>First Name</th>
-                <th>Middlename</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Office</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($users as $user)
-            <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $user->employee_id }}</td>
-                <td>{{ $user->lastname }}</td>
-                <td>{{ $user->firstname }}</td>
-                <td>{{ $user->middlename ?? 'N/A' }}</td>
-                <td>{{ $user->email }}</td>
-                <td>{{ $user->roleText() }}</td>
-                <td>{{ $user->office->name ?? 'N/A' }}</td>
-                <td>
-                    <span class="badge {{ $user->status ? 'bg-success' : 'bg-danger' }}">
-                        {{ $user->status ? 'Active' : 'Inactive' }}
-                    </span>
-                </td>
-                <td>
-                    <!-- ✅ Fix: JSON Encode to ensure valid JavaScript object -->
-                    <button class="btn btn-warning btn-sm" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#editUserModal"
-                        onclick="populateModal({{ json_encode($user) }})">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr class="text-center">
+                    <th>#</th>
+                    <th>Employee ID</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middlename</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Office</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($users as $user)
+                <tr class="align-middle text-center">
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $user->employee_id }}</td>
+                    <td>{{ $user->lastname }}</td>
+                    <td>{{ $user->firstname }}</td>
+                    <td>{{ $user->middlename ?? 'N/A' }}</td>
+                    <td>{{ $user->email }}</td>
+                    <td>{{ $user->roleText() }}</td>
+                    <td>{{ $user->office->name ?? 'N/A' }}</td>
+                    <td>
+                        <span id="status-{{ $user->id }}" 
+                              class="badge {{ $user->status ? 'bg-success' : 'bg-danger' }}" 
+                              style="cursor: pointer; font-size: 14px;" 
+                              onclick="toggleUserStatus({{ $user->id }})">
+                            {{ $user->status ? 'Active' : 'Inactive' }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editUserModal"
+                            onclick="populateModal({{ json_encode($user) }})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<!-- ✅ Full-Screen Modal -->
+<!-- ✅ Full-Screen Modal for Editing Users -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl"> <!-- ✅ Full-width modal -->
+    <div class="modal-dialog modal-lg"> <!-- ✅ Balanced modal width -->
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
@@ -65,7 +69,7 @@
 
                     <input type="hidden" id="user_id" name="user_id">
 
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-md-4">
                             <label for="employee_id" class="form-label">Employee ID</label>
                             <input type="text" class="form-control" id="employee_id" name="employee_id" required>
@@ -80,7 +84,7 @@
                         </div>
                     </div>
 
-                    <div class="row mt-3">
+                    <div class="row g-3 mt-2">
                         <div class="col-md-4">
                             <label for="middlename" class="form-label">Middlename</label>
                             <input type="text" class="form-control" id="middlename" name="middlename">
@@ -102,7 +106,7 @@
                         </div>
                     </div>
 
-                    <div class="row mt-3">
+                    <div class="row g-3 mt-2">
                         <div class="col-md-6">
                             <label for="office_id" class="form-label">Office</label>
                             <select class="form-control" id="office_id" name="office_id">
@@ -127,25 +131,20 @@
     </div>
 </div>
 
-<!-- ✅ JavaScript for Modal -->
+<!-- ✅ JavaScript for Modal and Status Update -->
 <script>
     function populateModal(user) {
-        console.log("User Data:", user); // ✅ Debugging
-
-        // Ensure the form action is set correctly
         document.getElementById("editUserForm").action = `/users/${user.id}/update`;
 
-        // Populate fields
         document.getElementById("user_id").value = user.id;
         document.getElementById("employee_id").value = user.employee_id;
         document.getElementById("lastname").value = user.lastname;
         document.getElementById("firstname").value = user.firstname;
-        document.getElementById("middlename").value = user.middlename ?? ''; // ✅ Fix: Include middlename
+        document.getElementById("middlename").value = user.middlename ?? ''; 
         document.getElementById("email").value = user.email;
-        document.getElementById("role").value = user.role; // ✅ Fix role selection
-        document.getElementById("status").value = user.status ? 1 : 0;
+        document.getElementById("role").value = user.role;
+        document.getElementById("status").value = user.status ? '1' : '0';
 
-        // ✅ Fix: Select the correct office in the dropdown
         let officeDropdown = document.getElementById("office_id");
         for (let i = 0; i < officeDropdown.options.length; i++) {
             if (officeDropdown.options[i].value == user.office_id) {
@@ -154,14 +153,27 @@
             }
         }
 
-        // ✅ Ensure modal opens properly
         let editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
         editModal.show();
+    }
 
-        // ✅ Fix: Ensure modal closes properly by removing backdrop manually
-        document.getElementById('editUserModal').addEventListener('hidden.bs.modal', function () {
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        });
+    function toggleUserStatus(userId) {
+        fetch(`/users/${userId}/toggle-status`, {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let statusSpan = document.getElementById(`status-${userId}`);
+                statusSpan.innerText = data.status;
+                statusSpan.className = `badge ${data.status_class}`;
+            }
+        })
+        .catch(error => console.error("Error:", error));
     }
 </script>
 

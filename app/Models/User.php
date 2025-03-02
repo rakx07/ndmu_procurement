@@ -19,6 +19,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'office',
 
         'password_changed_at'
     ];
@@ -86,4 +87,8 @@ class User extends Authenticatable
     {
         $this->attributes['password'] = Hash::make($value);
     }
+    public function office()
+{
+    return $this->belongsTo(Office::class);
+}
 }

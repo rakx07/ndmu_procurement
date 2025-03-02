@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Models\Office;
 
 class RegisteredUserController extends Controller
 {
@@ -19,7 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        $offices = Office::all(); // Fetch all offices
+        return view('auth.register', compact('offices')); // Pass to view
     }
 
     /**
@@ -37,6 +39,7 @@ class RegisteredUserController extends Controller
             'middlename' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users'],
             'role' => ['required', 'integer'],
+            'office_id' => ['required', 'exists:offices,id'], // Validate office selection
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -49,7 +52,7 @@ class RegisteredUserController extends Controller
             'email' => strtolower($request->email),
             'password' => Hash::make($request->password),
             'role' => $request->role,
-         
+            'office_id' => $request->office_id, // Store office selection
         ]);
 
         // Fire the Registered event (useful for email verification, etc.)

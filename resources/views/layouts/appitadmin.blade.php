@@ -72,7 +72,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->is('user-management') ? 'active' : '' }}" href="{{ route('user.management') }}">
+                <a class="nav-link {{ request()->is('manage-users*') ? 'active' : '' }}" href="{{ route('user.management') }}">
                     <i class="fas fa-users"></i> <span class="nav-text">Manage Users</span>
                 </a>
             </li>
@@ -96,5 +96,11 @@
     <div class="content p-4 flex-grow-1">
         @yield('content')
     </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("collapsed");
+        }
+    </script>
 </body>
 </html>

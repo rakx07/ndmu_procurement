@@ -40,14 +40,15 @@
         <!-- Office Selection -->
         <div class="mt-4">
             <x-input-label for="office_id" :value="__('Select Office')" />
-            <select id="office_id" name="office_id" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <select id="office_id" name="office_id" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+                <option value="">-- Select an Office --</option>
                 @foreach ($offices as $office)
                     <option value="{{ $office->id }}">{{ $office->name }}</option>
                 @endforeach
             </select>
             <x-input-error :messages="$errors->get('office_id')" class="mt-2" />
         </div>
-
+        
         <!-- Role Selection -->
         <div class="mt-4">
             <x-input-label for="role" :value="__('Select Role')" />

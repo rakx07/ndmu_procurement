@@ -90,5 +90,19 @@ class User extends Authenticatable
     public function office()
 {
     return $this->belongsTo(Office::class);
+}   
+public function roleText()
+{
+    $roles = [
+        0 => 'Staff',
+        1 => 'Purchasing Officer',
+        2 => 'Supervisor',
+        3 => 'Administrator',
+        4 => 'Comptroller',
+        5 => 'IT Admin',
+    ];
+
+    return $roles[$this->role] ?? 'Unknown';
 }
+
 }

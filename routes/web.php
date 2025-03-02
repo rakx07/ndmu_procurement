@@ -74,13 +74,26 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(['role:5'])->group(function () {
+        // IT Admin Dashboard
+        Route::get('/dashboard', [ITAdminController::class, 'dashboard'])->name('dashboard'); // Separate from user-management
+    
+        // User Management
+        Route::get('/user-management', [ITAdminController::class, 'index'])->name('user.management');
+    
+        // User Creation
         Route::get('/it-admin/create', [ITAdminController::class, 'create'])->name('it_admin.create');
         Route::post('/it-admin/store', [ITAdminController::class, 'store'])->name('it_admin.store');
-        Route::get('/user-management', [ITAdminController::class, 'index'])->name('user.management');
-        Route::patch('/it_admin/toggleStatus/{id}', [ITAdminController::class, 'toggleStatus'])->name('it_admin.toggleStatus');
-        Route::patch('/it_admin/suspend/{id}', [ITAdminController::class, 'suspend'])->name('it_admin.suspend');
-        Route::get('/dashboard', [ITAdminController::class, 'index'])->name('dashboard'); // ✅ IT Admin Dashboard
+    
+        // Edit & Update User
+        Route::put('/users/{id}/update', [ITAdminController::class, 'update'])->name('users.update');
+    
+        // Toggle Active/Inactive Status
+        Route::post('/it_admin/toggle-status/{id}', [ITAdminController::class, 'toggleStatus'])->name('it_admin.toggleStatus');
+    
+        // Suspend User
+        Route::post('/it_admin/suspend/{id}', [ITAdminController::class, 'suspend'])->name('it_admin.suspend');
     });
+    
 
     /*
     |--------------------------------------------------------------------------

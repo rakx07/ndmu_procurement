@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -76,6 +75,14 @@
         .content.collapsed {
             margin-left: 80px;
         }
+        /* Submenu styles */
+        .submenu {
+            display: none;
+            padding-left: 30px;
+        }
+        .submenu.open {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -95,10 +102,24 @@
                     <i class="fas fa-user"></i> <span class="nav-text">Profile</span>
                 </a>
             </li>
+            <!-- Manage Users with Persistent Collapsible Submenu -->
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('user.management') ? 'active' : '' }}" href="{{ route('user.management') }}">
+                <a class="nav-link" href="#" onclick="toggleSubMenu(event, 'userSubmenu')">
                     <i class="fas fa-users"></i> <span class="nav-text">Manage Users</span>
+                    <i class="fas fa-chevron-down ms-auto"></i>
                 </a>
+                <ul id="userSubmenu" class="nav flex-column submenu">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('user.management') ? 'active' : '' }}" href="{{ route('user.management') }}">
+                            <i class="fas fa-list"></i> <span class="nav-text">User List</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('it-admin/create') ? 'active' : '' }}" href="{{ url('/it-admin/create') }}">
+                            <i class="fas fa-user-plus"></i> <span class="nav-text">Create User</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('settings') ? 'active' : '' }}" href="{{ route('settings') }}">
@@ -131,6 +152,30 @@
             sidebar.classList.toggle("collapsed");
             content.classList.toggle("collapsed");
         }
+
+        function toggleSubMenu(event, submenuId) {
+            event.preventDefault();
+            let submenu = document.getElementById(submenuId);
+            let isOpen = submenu.classList.contains("open");
+
+            if (isOpen) {
+                submenu.classList.remove("open");
+                localStorage.setItem(submenuId, "closed");
+            } else {
+                submenu.classList.add("open");
+                localStorage.setItem(submenuId, "open");
+            }
+        }
+
+        // Keep submenu open if stored in localStorage
+        document.addEventListener("DOMContentLoaded", function() {
+            let submenu = document.getElementById("userSubmenu");
+            let submenuState = localStorage.getItem("userSubmenu");
+
+            if (submenuState === "open" || window.location.pathname.includes('/it-admin/create') || window.location.pathname.includes('user.management')) {
+                submenu.classList.add("open");
+            }
+        });
     </script>
 </body>
 </html>

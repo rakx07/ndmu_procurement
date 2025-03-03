@@ -18,7 +18,7 @@ class SupervisorController extends Controller
         $user = Auth::user();
 
         // Fetch only requests from the Supervisor's assigned Staff
-        $requests = ProcurementRequest::whereHas('user', function ($query) use ($user) {
+        $requests = ProcurementRequest::whereHas('requestor', function ($query) use ($user) {
             $query->where('supervisor_id', $user->id);
         })->get();
 
@@ -30,14 +30,14 @@ class SupervisorController extends Controller
      */
     public function show($id)
     {
-        $request = ProcurementRequest::findOrFail($id);
+        $procurementRequest = ProcurementRequest::findOrFail($id);
 
         // Ensure Supervisor can only view requests from their Staff
-        if ($request->user->supervisor_id !== Auth::id()) {
+        if ($procurementRequest->requestor->supervisor_id !== Auth::id()) {
             return redirect()->route('supervisor.dashboard')->with('error', 'Unauthorized to view this request.');
         }
 
-        return view('supervisor.show_request', compact('request'));
+        return view('supervisor.show_request', compact('procurementRequest'));
     }
 
     /**
@@ -45,14 +45,14 @@ class SupervisorController extends Controller
      */
     public function approveRequestView($id)
     {
-        $request = ProcurementRequest::findOrFail($id);
+        $procurementRequest = ProcurementRequest::findOrFail($id);
 
         // Ensure Supervisor can only approve requests from their Staff
-        if ($request->user->supervisor_id !== Auth::id()) {
+        if ($procurementRequest->requestor->supervisor_id !== Auth::id()) {
             return redirect()->route('supervisor.dashboard')->with('error', 'Unauthorized to approve this request.');
         }
 
-        return view('supervisor.approve_request', compact('request'));
+        return view('supervisor.approve_request', compact('procurementRequest'));
     }
 
     /**
@@ -64,13 +64,14 @@ class SupervisorController extends Controller
         $procurementRequest = ProcurementRequest::findOrFail($id);
 
         // Ensure the Supervisor can only approve their Staff's requests
-        if ($procurementRequest->user->supervisor_id !== $user->id) {
+        if ($procurementRequest->requestor->supervisor_id !== $user->id) {
             return redirect()->route('supervisor.dashboard')->with('error', 'Unauthorized to approve this request.');
         }
 
-        $procurementRequest->status = 'approved';
-        $procurementRequest->approved_by = $user->id;
-        $procurementRequest->save();
+        $procurementRequest->update([
+            'status' => 'approved',
+            'approved_by' => $user->id
+        ]);
 
         // Store approval record
         Approval::create([
@@ -92,13 +93,14 @@ class SupervisorController extends Controller
         $procurementRequest = ProcurementRequest::findOrFail($id);
 
         // Ensure the Supervisor can only reject their Staff's requests
-        if ($procurementRequest->user->supervisor_id !== $user->id) {
+        if ($procurementRequest->requestor->supervisor_id !== $user->id) {
             return redirect()->route('supervisor.dashboard')->with('error', 'Unauthorized to reject this request.');
         }
 
-        $procurementRequest->status = 'rejected';
-        $procurementRequest->remarks = $request->input('remarks');
-        $procurementRequest->save();
+        $procurementRequest->update([
+            'status' => 'rejected',
+            'remarks' => $request->input('remarks'),
+        ]);
 
         // Store rejection record
         Approval::create([

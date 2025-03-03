@@ -69,6 +69,7 @@ class ITAdminController extends Controller
             'role' => $request->role,
             'office_id' => $request->office_id,
             'status' => 1, // Default to active
+            'must_change_password' => true, // ✅ Require password change on first login
         ]);
 
         // Ensure user creation was successful
@@ -120,10 +121,14 @@ class ITAdminController extends Controller
     {
         $user = User::findOrFail($id);
         $newTempPassword = Str::random(10);
-        $user->update(['password' => Hash::make($newTempPassword)]);
+
+        $user->update([
+            'password' => Hash::make($newTempPassword),
+            'must_change_password' => true, // ✅ Require password change after reset
+        ]);
 
         return back()->with([
-            'success' => 'Password reset successfully!',
+            'success' => 'Password reset successfully! User must change password on next login.',
             'temp_password' => $newTempPassword,
         ]);
     }

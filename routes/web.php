@@ -9,6 +9,7 @@ use App\Http\Controllers\ProcurementRequestController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\PasswordController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -141,4 +142,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', function () {
         return view('settings');
     })->name('settings');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('change_password_form');
+    Route::put('/change-password', [PasswordController::class, 'updatePassword'])->name('change_password'); // ✅ Ensure this is PUT
 });

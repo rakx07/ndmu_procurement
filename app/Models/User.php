@@ -19,9 +19,10 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'office_id',  // ✅ Fixed field name
+        'office_id',
         'status',
-        'password_changed_at'
+        'password_changed_at',
+        'must_change_password', // ✅ Added this field
     ];
 
     protected $hidden = [
@@ -31,14 +32,15 @@ class User extends Authenticatable
 
     protected $casts = [
         'password_changed_at' => 'datetime',
+        'must_change_password' => 'boolean', // ✅ Cast to boolean
     ];
 
     /**
-     * Check if the user must change their password (first login)
+     * Check if the user must change their password (first login or admin-created)
      */
     public function mustChangePassword()
     {
-        return is_null($this->password_changed_at);
+        return $this->must_change_password;
     }
 
     /**
@@ -115,5 +117,15 @@ class User extends Authenticatable
         ];
 
         return $roles[$this->role] ?? 'Unknown';
+    }
+
+    /**
+     * Force password change after first login if required
+     */
+    public function markPasswordAsChanged()
+    {
+        $this->must_change_password = false;
+        $this->password_changed_at = now();
+        $this->save();
     }
 }

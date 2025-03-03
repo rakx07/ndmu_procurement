@@ -1,4 +1,4 @@
-@extends('staff.staffapp')
+@extends('layouts.staffapp')
 
 @section('content')
 <div class="container mx-auto p-6">

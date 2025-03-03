@@ -1,5 +1,5 @@
 <!-- resources/views/staff/dashboard.blade.php -->
-@extends('staffapp')
+@extends('layouts.staffapp')
 
 @section('content')
 <div class="container mx-auto p-6">

@@ -15,7 +15,7 @@ class StaffController extends Controller
 
     public function create()
     {
-        return view('staff.create_request');
+        return view('staff.create'); // Ensure this matches your view file
     }
 
     public function store(Request $request)

@@ -26,7 +26,6 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 | Laravel Breeze Authentication Routes
 |--------------------------------------------------------------------------
-| These routes are handled by Laravel Breeze, so we keep them intact.
 */
 require __DIR__.'/auth.php';
 
@@ -36,7 +35,17 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    if (auth()->check()) {
+        switch (auth()->user()->role) {
+            case 0:
+                return redirect()->route('staff.dashboard'); // Redirect staff users
+            case 5:
+                return redirect()->route('it_admin.dashboard'); // Redirect IT Admin
+            default:
+                return view('dashboard'); // Keep this for other roles
+        }
+    }
+    return redirect('/login'); // Redirect unauthenticated users
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 /*
@@ -62,13 +71,19 @@ Route::middleware(['auth'])->group(function () {
         ->name('change_password_form');
     Route::post('/change-password', [ChangePasswordController::class, 'updatePassword'])
         ->name('update_password');
-        Route::get('/settings', function () {
-            return view('settings'); // Ensure settings.blade.php exists in resources/views
-        })->name('settings');
-        Route::get('/settings', function () {
-            return view('settings');
-        })->name('settings');
-        
+
+    /*
+    |--------------------------------------------------------------------------
+    | Staff Routes (Role: 0)
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['role:0'])->group(function () {
+        Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
+        Route::get('/staff/request/create', [StaffController::class, 'create'])->name('staff.requests.create');
+        Route::post('/staff/request', [StaffController::class, 'store'])->name('staff.requests.store');
+        Route::get('/staff/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
+        Route::put('/staff/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -76,39 +91,13 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(['role:5'])->group(function () {
-        // IT Admin Dashboard
-        Route::get('/dashboard', [ITAdminController::class, 'dashboard'])->name('dashboard'); // Separate from user-management
-    
-        // User Management
+        Route::get('/it-admin/dashboard', [ITAdminController::class, 'dashboard'])->name('it_admin.dashboard'); // Fixed path
         Route::get('/user-management', [ITAdminController::class, 'index'])->name('user.management');
-    
-        // User Creation
         Route::get('/it-admin/create', [ITAdminController::class, 'create'])->name('it_admin.create');
         Route::post('/it-admin/store', [ITAdminController::class, 'store'])->name('it_admin.store');
-    
-        // Edit & Update User
         Route::put('/users/{id}/update', [ITAdminController::class, 'update'])->name('users.update');
-    
-        // Toggle Active/Inactive Status
         Route::post('/it_admin/toggle-status/{id}', [ITAdminController::class, 'toggleStatus'])->name('it_admin.toggleStatus');
-    
-        // Suspend User
         Route::post('/it_admin/suspend/{id}', [ITAdminController::class, 'suspend'])->name('it_admin.suspend');
-    });
-    
-
-    /*
-    |--------------------------------------------------------------------------
-    | Procurement Request Routes (For Staff)
-    |--------------------------------------------------------------------------
-    */
-    Route::middleware(['role:0'])->group(function () {
-        Route::resource('procurement-requests', ProcurementRequestController::class);
-        Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
-        Route::get('/staff/request/create', [StaffController::class, 'create'])->name('staff.requests.create');
-        Route::post('/staff/request', [StaffController::class, 'store'])->name('staff.requests.store');
-        Route::get('/staff/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
-        Route::put('/staff/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
     });
 
     /*
@@ -150,8 +139,12 @@ Route::middleware(['auth'])->group(function () {
     })->name('settings');
 });
 
-
+/*
+|--------------------------------------------------------------------------
+| Password Change Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
     Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('change_password_form');
-    Route::put('/change-password', [PasswordController::class, 'updatePassword'])->name('change_password'); // ✅ Ensure this is PUT
+    Route::put('/change-password', [PasswordController::class, 'updatePassword'])->name('change_password');
 });

@@ -13,7 +13,7 @@
         <ul>
             <li class="mb-4"><a href="{{ route('staff.dashboard') }}" class="hover:underline">Dashboard</a></li>
             <li class="mb-4"><a href="{{ route('staff.requests.create') }}" class="hover:underline">Create Request</a></li>
-            <li class="mb-4"><a href="{{ route('staff.profile') }}" class="hover:underline">Profile</a></li>
+            <li class="mb-4"><a href="{{ route('profile.edit') }}" class="hover:underline">Profile</a></li>
             <li><a href="{{ route('logout') }}" class="text-red-400 hover:underline">Logout</a></li>
         </ul>
     </aside>

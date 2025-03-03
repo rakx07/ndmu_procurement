@@ -61,12 +61,12 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'auth' => Authenticate::class,
         // 'role' => RoleMiddleware::class, // Role-based access control
-        'role' => \App\Http\Middleware\RoleMiddleware::class, // Ensure this line exists
+        'role' => RoleMiddleware::class, // Ensure this line exists
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'bindings' => SubstituteBindings::class,
         'cache.headers' => SetCacheHeaders::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class, // Ensure correct namespace
+        'guest' => RedirectIfAuthenticated::class, // Ensure correct namespace
         'password.confirm' => RequirePassword::class,
         'signed' => ValidateSignature::class,
         'throttle' => ThrottleRequests::class,

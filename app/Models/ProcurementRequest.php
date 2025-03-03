@@ -32,4 +32,8 @@ class ProcurementRequest extends Model
     {
         return $this->hasOne(Purchase::class, 'request_id');
     }
+    public function approver()
+{
+    return $this->belongsTo(User::class, 'approved_by');
+}
 }

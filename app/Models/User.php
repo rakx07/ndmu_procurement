@@ -22,7 +22,9 @@ class User extends Authenticatable
         'office_id',
         'status',
         'password_changed_at',
-        'must_change_password', // ✅ Added this field
+        'must_change_password',
+        'supervisor_id',
+        'administrator_id',
     ];
 
     protected $hidden = [
@@ -32,7 +34,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'password_changed_at' => 'datetime',
-        'must_change_password' => 'boolean', // ✅ Cast to boolean
+        'must_change_password' => 'boolean',
     ];
 
     /**
@@ -60,7 +62,44 @@ class User extends Authenticatable
     }
 
     /**
-     * Relationships
+     * Hierarchical Relationships
+     */
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    public function administrator()
+    {
+        return $this->belongsTo(User::class, 'administrator_id');
+    }
+
+    public function subordinates()
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
+
+    /**
+     * Check if the user can approve a procurement request
+     */
+    public function canApprove(ProcurementRequest $request)
+    {
+        // If the user is a Supervisor, they can approve only their direct Staff
+        if ($this->isRole('supervisor') && $request->user->supervisor_id == $this->id) {
+            return true;
+        }
+
+        // If the user is an Administrator, they can approve Supervisors & Staff under them
+        if ($this->isRole('admin') && 
+            ($request->user->administrator_id == $this->id || $request->user->supervisor_id == $this->id)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Procurement-related Relationships
      */
     public function procurementRequests()
     {

@@ -10,8 +10,9 @@ use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\AuditTrailController;
-use App\Http\Controllers\StaffController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\SupervisorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -147,4 +148,12 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('change_password_form');
     Route::put('/change-password', [PasswordController::class, 'updatePassword'])->name('change_password');
+});
+//ROLE 2
+Route::middleware(['auth', 'role:2'])->group(function () {
+    Route::get('/supervisor/dashboard', [SupervisorController::class, 'dashboard'])->name('supervisor.dashboard');
+    Route::get('/supervisor/request/{id}', [SupervisorController::class, 'show'])->name('supervisor.show');
+    Route::get('/supervisor/approve/{id}', [SupervisorController::class, 'approveRequestView'])->name('supervisor.approve_request');
+    Route::post('/supervisor/approve/{id}', [SupervisorController::class, 'approve'])->name('supervisor.approve');
+    Route::post('/supervisor/reject/{id}', [SupervisorController::class, 'reject'])->name('supervisor.reject');
 });

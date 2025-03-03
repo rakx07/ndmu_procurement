@@ -134,8 +134,12 @@
 <!-- ✅ JavaScript for Modal and Status Update -->
 <script>
     function populateModal(user) {
+        let editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+
+        // Set form action
         document.getElementById("editUserForm").action = `/users/${user.id}/update`;
 
+        // Populate fields
         document.getElementById("user_id").value = user.id;
         document.getElementById("employee_id").value = user.employee_id;
         document.getElementById("lastname").value = user.lastname;
@@ -145,6 +149,7 @@
         document.getElementById("role").value = user.role;
         document.getElementById("status").value = user.status ? '1' : '0';
 
+        // Select the correct office
         let officeDropdown = document.getElementById("office_id");
         for (let i = 0; i < officeDropdown.options.length; i++) {
             if (officeDropdown.options[i].value == user.office_id) {
@@ -153,9 +158,16 @@
             }
         }
 
-        let editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        // Show modal
         editModal.show();
     }
+
+    // ✅ Ensure modal closes properly
+    document.getElementById('editUserModal').addEventListener('hidden.bs.modal', function () {
+        // Remove any lingering backdrop
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open'); // Remove Bootstrap's modal-open class
+    });
 
     function toggleUserStatus(userId) {
         fetch(`/users/${userId}/toggle-status`, {
@@ -176,6 +188,7 @@
         .catch(error => console.error("Error:", error));
     }
 </script>
+
 
 <!-- ✅ Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

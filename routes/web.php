@@ -8,8 +8,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProcurementRequestController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\AuditTrailController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\StaffController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -103,6 +104,11 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::middleware(['role:0'])->group(function () {
         Route::resource('procurement-requests', ProcurementRequestController::class);
+        Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
+        Route::get('/staff/request/create', [StaffController::class, 'create'])->name('staff.requests.create');
+        Route::post('/staff/request', [StaffController::class, 'store'])->name('staff.requests.store');
+        Route::get('/staff/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
+        Route::put('/staff/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
     });
 
     /*

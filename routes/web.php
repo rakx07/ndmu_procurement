@@ -77,14 +77,20 @@ Route::middleware(['auth'])->group(function () {
 | Staff Routes (Role: 0) - Staff Users Only
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:0'])->group(function () {
-    Route::get('/staff/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
-    Route::get('/staff/request/create', [StaffController::class, 'create'])->name('staff.requests.create');
-    Route::post('/staff/request', [StaffController::class, 'store'])->name('staff.requests.store');
-    Route::get('/staff/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
-    Route::put('/staff/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
-});
+Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
+    // Dashboard - Displays staff procurement requests
+    Route::get('/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
 
+    // Procurement Request Management
+    Route::get('/request/create', [ProcurementRequestController::class, 'create'])->name('staff.requests.create'); // ✅ FIXED: Moved inside role:0
+    Route::post('/request', [StaffController::class, 'store'])->name('staff.requests.store');
+    Route::get('/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
+    Route::put('/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
+
+    // Procurement Requests - Viewing and Storage
+    Route::get('/requests', [ProcurementRequestController::class, 'index'])->name('staff.requests.index');
+    Route::post('/requests/store', [ProcurementRequestController::class, 'store'])->name('staff.requests.store');
+});
 /*
 |--------------------------------------------------------------------------
 | Supervisor Routes (Role: 2) - Supervisors Only

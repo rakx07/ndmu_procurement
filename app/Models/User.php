@@ -167,4 +167,8 @@ class User extends Authenticatable
         $this->password_changed_at = now();
         $this->save();
     }
+    public function getFullNameAttribute()
+{
+    return $this->firstname . ' ' . $this->lastname;
+}
 }

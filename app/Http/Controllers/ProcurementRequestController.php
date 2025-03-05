@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProcurementRequest;
+use App\Models\ProcurementItem;
 use App\Models\User;
 use App\Models\Approval;
 use Illuminate\Support\Facades\DB;
@@ -12,102 +13,91 @@ use Illuminate\Support\Facades\DB;
 class ProcurementRequestController extends Controller
 {
     /**
-     * Display the list of procurement requests for approval.
+     * Display the list of procurement requests based on the user's role.
      */
     public function index()
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        // If Supervisor, fetch only requests from their direct Staff
-        if ($user->isRole('supervisor')) {
-            $requests = ProcurementRequest::whereHas('user', function ($query) use ($user) {
-                $query->where('supervisor_id', $user->id);
-            })->get();
-        }
-        // If Administrator, fetch requests from their Supervisors & Staff
-        elseif ($user->isRole('admin')) {
-            $requests = ProcurementRequest::whereHas('user', function ($query) use ($user) {
-                $query->where('administrator_id', $user->id)->orWhere('supervisor_id', $user->id);
-            })->get();
-        }
-        // If Purchasing Officer, fetch all approved requests
-        elseif ($user->isRole('purchasing_officer')) {
-            $requests = ProcurementRequest::where('status', 'approved')->get();
-        } 
-        // Default: Fetch all requests (for IT Admin or other roles)
-        else {
-            $requests = ProcurementRequest::all();
-        }
-
-        return view('procurement_requests.index', compact('requests'));
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'You must be logged in.');
     }
+
+    // Fetch procurement requests based on role
+    if ($user->role == 0) { // Staff - Can only see their own office's requests
+        $requests = ProcurementRequest::where('office_id', $user->office_id)->with('requestor')->get();
+    } elseif ($user->role == 2) { // Supervisor - Sees pending requests
+        $requests = ProcurementRequest::where('status', 'pending')->with('requestor')->get();
+    } elseif ($user->role == 3) { // Administrator - Sees supervisor-approved requests
+        $requests = ProcurementRequest::where('status', 'supervisor_approved')->with('requestor')->get();
+    } elseif ($user->role == 4) { // Comptroller - Sees admin-approved requests
+        $requests = ProcurementRequest::where('status', 'admin_approved')->with('requestor')->get();
+    } elseif ($user->role == 1) { // Purchasing Officer - Sees comptroller-approved requests
+        $requests = ProcurementRequest::where('status', 'comptroller_approved')->with('requestor')->get();
+    } else { // IT Admin and others see all requests
+        $requests = ProcurementRequest::with('requestor')->get();
+    }
+
+    return view('staff.index', compact('requests')); // ✅ Ensures staff see only their office's requests
+}
+
+
 
     /**
      * Show the details of a specific procurement request.
      */
     public function show($id)
     {
-        $request = ProcurementRequest::findOrFail($id);
+        $request = ProcurementRequest::with('items')->findOrFail($id);
         return view('procurement_requests.show', compact('request'));
     }
 
     /**
-     * Supervisor or Administrator Approval
+     * Approve a Procurement Request based on the user's role.
      */
     public function approve($id)
     {
         $user = Auth::user();
         $procurementRequest = ProcurementRequest::findOrFail($id);
-        $requestor = User::findOrFail($procurementRequest->requestor_id);
 
-        // If Supervisor, approve only their Staff requests
-        if ($user->isRole('supervisor') && $requestor->supervisor_id == $user->id) {
-            $procurementRequest->status = 'approved';
-            $procurementRequest->approved_by = $user->id;
-            $procurementRequest->save();
-
-            // Store approval record
-            Approval::create([
-                'request_id' => $procurementRequest->id,
-                'approver_id' => $user->id,
-                'role' => 'Supervisor',
-                'status' => 'approved',
-            ]);
-
-            return redirect()->back()->with('success', 'Request approved successfully.');
+        // Determine next approval step based on role
+        if ($user->role == 2 && $procurementRequest->status == 'pending') { // Supervisor Approval
+            $procurementRequest->status = 'supervisor_approved';
+        } elseif ($user->role == 3 && $procurementRequest->status == 'supervisor_approved') { // Admin Approval
+            $procurementRequest->status = 'admin_approved';
+        } elseif ($user->role == 4 && $procurementRequest->status == 'admin_approved') { // Comptroller Approval
+            $procurementRequest->status = 'comptroller_approved';
+        } else {
+            return redirect()->back()->with('error', 'You are not authorized to approve this request.');
         }
 
-        // If Administrator, approve Supervisors' and Staff's requests
-        if ($user->isRole('admin') && ($requestor->administrator_id == $user->id || $requestor->supervisor_id == $user->id)) {
-            $procurementRequest->status = 'approved';
-            $procurementRequest->approved_by = $user->id;
-            $procurementRequest->save();
+        // Save approval and log it
+        $procurementRequest->approved_by = $user->id;
+        $procurementRequest->save();
 
-            Approval::create([
-                'request_id' => $procurementRequest->id,
-                'approver_id' => $user->id,
-                'role' => 'Administrator',
-                'status' => 'approved',
-            ]);
+        Approval::create([
+            'request_id' => $procurementRequest->id,
+            'approver_id' => $user->id,
+            'role' => $user->role,
+            'status' => 'approved',
+        ]);
 
-            return redirect()->back()->with('success', 'Request approved successfully.');
-        }
-
-        return redirect()->back()->with('error', 'Unauthorized to approve this request.');
+        return redirect()->back()->with('success', 'Request approved successfully.');
     }
 
     /**
-     * Reject a Procurement Request
+     * Reject a Procurement Request.
      */
     public function reject(Request $request, $id)
     {
         $user = Auth::user();
         $procurementRequest = ProcurementRequest::findOrFail($id);
 
-        if (!$user->canApprove($procurementRequest)) {
+        if (!in_array($user->role, [2, 3, 4])) {
             return redirect()->back()->with('error', 'Unauthorized to reject this request.');
         }
 
+        // Mark request as rejected
         $procurementRequest->status = 'rejected';
         $procurementRequest->remarks = $request->input('remarks');
         $procurementRequest->save();
@@ -115,7 +105,7 @@ class ProcurementRequestController extends Controller
         Approval::create([
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
-            'role' => 'Supervisor/Administrator',
+            'role' => $user->role,
             'status' => 'rejected',
             'remarks' => $request->input('remarks'),
         ]);
@@ -124,18 +114,19 @@ class ProcurementRequestController extends Controller
     }
 
     /**
-     * Purchasing Officer marks as purchased
+     * Purchasing Officer marks as purchased.
      */
     public function markAsPurchased($id)
     {
         $user = Auth::user();
-        if (!$user->isRole('purchasing_officer')) {
+        $procurementRequest = ProcurementRequest::findOrFail($id);
+
+        if ($user->role != 1) { // Only Purchasing Officer
             return redirect()->back()->with('error', 'Only the purchasing officer can perform this action.');
         }
 
-        $procurementRequest = ProcurementRequest::findOrFail($id);
-        if ($procurementRequest->status !== 'approved') {
-            return redirect()->back()->with('error', 'Only approved requests can be marked as purchased.');
+        if ($procurementRequest->status !== 'comptroller_approved') {
+            return redirect()->back()->with('error', 'Only fully approved requests can be marked as purchased.');
         }
 
         $procurementRequest->status = 'purchased';
@@ -145,16 +136,80 @@ class ProcurementRequestController extends Controller
     }
 
     /**
-     * Delete a request (IT Admin only)
+     * Delete a Procurement Request (Only IT Admin).
      */
     public function destroy($id)
     {
         $user = Auth::user();
-        if (!$user->isRole('it_admin')) {
+        if ($user->role != 5) { // IT Admin only
             return redirect()->back()->with('error', 'Only IT Admin can delete requests.');
         }
 
         ProcurementRequest::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'Request deleted successfully.');
+    }
+
+    /**
+     * Show the create form for procurement requests.
+     */
+    public function create()
+    {
+        $user = auth()->user();
+    
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'You must be logged in.');
+        }
+    
+        // Fetch distinct items for the user's office
+        $existingItems = ProcurementItem::where('office_id', $user->office_id)
+                        ->select('id', 'item_name', 'unit_price', 'office_id')
+                        ->distinct()
+                        ->get();
+    
+        return view('staff.create', compact('user', 'existingItems'));
+    }
+    
+
+
+    
+
+
+    /**
+     * Store a new procurement request along with its items.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'office' => 'required|string',
+            'date_requested' => 'required|date',
+            'items' => 'required|array',
+            'items.*.item_name' => 'required|string',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        $user = auth()->user();
+
+        // Create procurement request
+        $procurementRequest = ProcurementRequest::create([
+            'requestor_id' => $user->id,
+            'office' => $request->office,
+            'date_requested' => $request->date_requested,
+            'status' => 'pending',
+        ]);
+
+        // Add items to procurement request
+        foreach ($request->items as $item) {
+            ProcurementItem::create([
+                'request_id' => $procurementRequest->id,
+                'item_name' => $item['item_name'],
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['unit_price'] ?? null,
+                'total_price' => isset($item['unit_price']) ? $item['unit_price'] * $item['quantity'] : null,
+                'status' => 'pending',
+                'office_id' => $user->office_id, // ✅ Ensure office ID is stored
+            ]);
+        }
+
+        return redirect()->route('staff.requests.index')->with('success', 'Procurement request created successfully!');
     }
 }

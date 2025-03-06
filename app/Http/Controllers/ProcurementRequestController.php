@@ -16,24 +16,55 @@ class ProcurementRequestController extends Controller
      * Display the list of procurement requests based on the user's role.
      */
     public function index()
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'You must be logged in.');
-        }
-
-        $requests = match ($user->role) {
-            0 => ProcurementRequest::where('office_id', $user->office_id)->with('requestor')->get(),
-            2 => ProcurementRequest::where('status', 'pending')->with('requestor')->get(),
-            3 => ProcurementRequest::where('status', 'supervisor_approved')->with('requestor')->get(),
-            4 => ProcurementRequest::where('status', 'admin_approved')->with('requestor')->get(),
-            1 => ProcurementRequest::where('status', 'comptroller_approved')->with('requestor')->get(),
-            default => ProcurementRequest::with('requestor')->get(),
-        };
-
-        return view('staff.index', compact('requests'));
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'You must be logged in.');
     }
+
+    // ✅ Fetch procurement requests based on the user role
+    $requests = match ($user->role) {
+        // Staff: Only see their own requests
+        0 => ProcurementRequest::where('requestor_id', $user->id)
+            ->with('items', 'requestor')
+            ->latest()
+            ->paginate(10),
+
+        // Supervisor: See all pending requests from their office
+        2 => ProcurementRequest::where('office_id', $user->office_id)
+            ->where('status', 'pending')
+            ->with('items', 'requestor')
+            ->latest()
+            ->paginate(10),
+
+        // Administrator: See requests that have been approved by the supervisor
+        3 => ProcurementRequest::where('status', 'supervisor_approved')
+            ->with('items', 'requestor')
+            ->latest()
+            ->paginate(10),
+
+        // Comptroller: See requests that have been approved by the administrator
+        4 => ProcurementRequest::where('status', 'admin_approved')
+            ->with('items', 'requestor')
+            ->latest()
+            ->paginate(10),
+
+        // Purchasing Officer: See requests ready for purchase
+        1 => ProcurementRequest::where('status', 'comptroller_approved')
+            ->with('items', 'requestor')
+            ->latest()
+            ->paginate(10),
+
+        // IT Admin: See all requests
+        default => ProcurementRequest::with('items', 'requestor')
+            ->latest()
+            ->paginate(10),
+    };
+
+    return view('staff.index', compact('requests'));
+}
+
 
     /**
      * Show the details of a specific procurement request.

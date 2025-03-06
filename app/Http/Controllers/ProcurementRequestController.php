@@ -139,21 +139,20 @@ class ProcurementRequestController extends Controller
      * Show the create form for procurement requests.
      */
     public function create()
-{
-    $user = Auth::user();
-    if (!$user) {
-        return redirect()->route('login')->with('error', 'You must be logged in.');
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'You must be logged in.');
+        }
+
+        // Get distinct items based on item_name and office_id, keeping the latest unit_price
+        $existingItems = ProcurementItem::where('office_id', $user->office_id)
+            ->select('item_name', DB::raw('MAX(unit_price) as unit_price'))
+            ->groupBy('item_name')
+            ->paginate(10); // ✅ Added pagination
+
+        return view('staff.create', compact('user', 'existingItems'));
     }
-
-    // ✅ Use `paginate(10)` to avoid Collection errors
-    $existingItems = ProcurementItem::where('office_id', $user->office_id)
-                    ->select('id', 'item_name', 'unit_price', 'office_id')
-                    ->distinct()
-                    ->paginate(10); 
-
-    return view('staff.create', compact('user', 'existingItems'));
-}
-
 
     /**
      * Store a new procurement request along with its items.
@@ -182,8 +181,8 @@ class ProcurementRequestController extends Controller
                 'request_id' => $procurementRequest->id,
                 'item_name' => $item['item_name'],
                 'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'] ?? null,
-                'total_price' => isset($item['unit_price']) ? $item['unit_price'] * $item['quantity'] : null,
+                'unit_price' => $item['unit_price'] ?? 0,
+                'total_price' => ($item['unit_price'] ?? 0) * $item['quantity'],
                 'status' => 'pending',
                 'office_id' => $user->office_id,
             ]);
@@ -192,6 +191,9 @@ class ProcurementRequestController extends Controller
         return redirect()->route('staff.requests.index')->with('success', 'Procurement request created successfully!');
     }
 
+    /**
+     * Add new item to the procurement system.
+     */
     public function addItem(Request $request)
     {
         try {
@@ -202,30 +204,31 @@ class ProcurementRequestController extends Controller
 
             $user = Auth::user();
 
-            // Ensure office_id is assigned properly
             $item = ProcurementItem::create([
                 'request_id' => null, // Not linked to a request yet
                 'item_name' => $request->item_name,
                 'quantity' => 1, // Default quantity
                 'unit_price' => $request->unit_price,
-                'total_price' => $request->unit_price, // Default total price
+                'total_price' => $request->unit_price,
                 'status' => 'available',
-                'office_id' => $user->office_id ?? null, // Ensure this exists
+                'office_id' => $user->office_id ?? null,
             ]);
 
             return response()->json(['success' => true, 'item' => $item], 200);
-
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Get request items for a specific procurement request.
+     */
     public function getRequestItems($id)
-{
-    $items = ProcurementItem::where('request_id', $id)
-                ->select('item_name', 'quantity', 'unit_price', 'total_price')
-                ->get();
+    {
+        $items = ProcurementItem::where('request_id', $id)
+            ->select('item_name', 'quantity', 'unit_price', 'total_price')
+            ->get();
 
-    return response()->json($items);
-}
-
+        return response()->json($items);
+    }
 }

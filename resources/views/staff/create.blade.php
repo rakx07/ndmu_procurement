@@ -25,7 +25,8 @@
 
                 <div class="mb-4">
                     <label class="block">Date Requested</label>
-                    <input type="date" name="date_requested" class="border rounded p-2 w-full" required>
+                    <input type="date" name="date_requested" class="border rounded p-2 w-full" required 
+                    value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
                 </div>
 
                 <h3 class="text-lg font-semibold mb-2">Selected Items</h3>
@@ -63,7 +64,7 @@
                         <tr>
                             <td class="border border-gray-300 p-2 text-center">
                                 <input type="checkbox" value="{{ $item->item_name }}" 
-                                       data-id="{{ $item->id }}" 
+                                       data-item-name="{{ $item->item_name }}" 
                                        data-price="{{ $item->unit_price }}" 
                                        onclick="addItemToRequest(this)">
                             </td>
@@ -106,36 +107,35 @@
 <script>
     function addItemToRequest(checkbox) {
         if (checkbox.checked) {
-            const itemId = checkbox.getAttribute('data-id');
-            const itemName = checkbox.value;
+            const itemName = checkbox.getAttribute('data-item-name');
             const unitPrice = checkbox.getAttribute('data-price') || 0;
 
             const container = document.getElementById('selected-items-container');
             const itemHtml = `
-                <tr id="selected-item-${itemId}">
+                <tr id="selected-item-${itemName.replace(/\s+/g, '-')}">
                     <td class="border border-gray-300 p-2">
-                        <input type="text" name="items[${itemId}][item_name]" value="${itemName}" class="border rounded p-2 w-full" readonly>
+                        <input type="text" name="items[${itemName}][item_name]" value="${itemName}" class="border rounded p-2 w-full" readonly>
                     </td>
                     <td class="border border-gray-300 p-2">
-                        <input type="number" name="items[${itemId}][unit_price]" value="${unitPrice}" class="border rounded p-2 w-full" readonly>
+                        <input type="number" name="items[${itemName}][unit_price]" value="${unitPrice}" class="border rounded p-2 w-full" readonly>
                     </td>
                     <td class="border border-gray-300 p-2">
-                        <input type="number" name="items[${itemId}][quantity]" class="border rounded p-2 w-full" required min="1">
+                        <input type="number" name="items[${itemName}][quantity]" class="border rounded p-2 w-full" required min="1">
                     </td>
                     <td class="border border-gray-300 p-2">
-                        <button type="button" onclick="removeSelectedItem('${itemId}')" class="bg-red-500 text-white px-2 py-1 rounded">Remove</button>
+                        <button type="button" onclick="removeSelectedItem('${itemName.replace(/\s+/g, '-')}')" class="bg-red-500 text-white px-2 py-1 rounded">Remove</button>
                     </td>
                 </tr>
             `;
             container.insertAdjacentHTML('beforeend', itemHtml);
         } else {
-            removeSelectedItem(checkbox.getAttribute('data-id'));
+            removeSelectedItem(checkbox.getAttribute('data-item-name').replace(/\s+/g, '-'));
         }
     }
 
-    function removeSelectedItem(itemId) {
-        document.getElementById(`selected-item-${itemId}`)?.remove();
-        document.querySelector(`input[data-id="${itemId}"]`).checked = false;
+    function removeSelectedItem(itemName) {
+        document.getElementById(`selected-item-${itemName}`)?.remove();
+        document.querySelector(`input[data-item-name="${itemName}"]`).checked = false;
     }
 
     function showAddItemModal() {
@@ -147,35 +147,31 @@
     }
 
     function addNewItem() {
-    let itemName = document.getElementById("newItemName").value.trim();
-    let itemPrice = document.getElementById("newItemPrice").value.trim();
+        let itemName = document.getElementById("newItemName").value.trim();
+        let itemPrice = document.getElementById("newItemPrice").value.trim();
 
-    if (itemName === "" || itemPrice === "") {
-        alert("Please fill in all fields.");
-        return;
-    }
-
-    fetch("{{ route('staff.requests.addItem') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({ 
-            item_name: itemName, 
-            unit_price: parseFloat(itemPrice)
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload(); // Reload page to show new item
-        } else {
-            alert("Error: " + data.error);
+        if (itemName === "" || itemPrice === "") {
+            alert("Please fill in all fields.");
+            return;
         }
-    })
-    .catch(error => console.error("Fetch error:", error));
-}
 
+        fetch("{{ route('staff.requests.addItem') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ item_name: itemName, unit_price: parseFloat(itemPrice) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => console.error("Fetch error:", error));
+    }
 </script>
 @endsection

@@ -77,12 +77,12 @@ Route::middleware(['auth'])->group(function () {
 | Staff Routes (Role: 0) - Staff Users Only
 |--------------------------------------------------------------------------
 */
+// Staff Routes (Only Role 0 can access)
 Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
-    // Dashboard - Displays staff procurement requests
     Route::get('/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
 
     // Procurement Request Management
-    Route::get('/request/create', [ProcurementRequestController::class, 'create'])->name('staff.requests.create'); // ✅ FIXED: Moved inside role:0
+    Route::get('/request/create', [ProcurementRequestController::class, 'create'])->name('staff.requests.create');
     Route::post('/request', [StaffController::class, 'store'])->name('staff.requests.store');
     Route::get('/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
     Route::put('/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
@@ -90,7 +90,18 @@ Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
     // Procurement Requests - Viewing and Storage
     Route::get('/requests', [ProcurementRequestController::class, 'index'])->name('staff.requests.index');
     Route::post('/requests/store', [ProcurementRequestController::class, 'store'])->name('staff.requests.store');
+    Route::get('/requests/{id}', [ProcurementRequestController::class, 'show'])->name('staff.requests.show');
+
+    // ✅ FIX: Removed extra "staff/" to avoid duplication
+    Route::get('/request/{id}/items', [ProcurementRequestController::class, 'getRequestItems'])->name('staff.requests.items');
 });
+
+// ✅ FIX: Allow all authenticated users to add items
+Route::middleware(['auth'])->group(function () {
+    Route::post('/staff/request/add-item', [ProcurementRequestController::class, 'addItem'])->name('staff.requests.addItem');
+});
+
+
 /*
 |--------------------------------------------------------------------------
 | Supervisor Routes (Role: 2) - Supervisors Only

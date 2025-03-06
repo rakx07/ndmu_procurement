@@ -1,6 +1,8 @@
 @extends('layouts.staffapp')
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}"> {{-- Ensure CSRF Token is available --}}
+
 <div class="container mx-auto p-6">
     <h2 class="text-2xl font-bold mb-4">Create Procurement Request</h2>
 
@@ -13,11 +15,7 @@
                 @csrf
                 <div class="mb-4">
                     <label class="block">Requestor</label>
-                    <input type="text" 
-       value="{{ auth()->user()->firstname . ' ' . auth()->user()->lastname }}"  
-       class="border rounded p-2 w-full bg-gray-100" 
-       readonly>
-
+                    <input type="text" value="{{ auth()->user()->firstname . ' ' . auth()->user()->lastname }}" class="border rounded p-2 w-full bg-gray-100" readonly>
                 </div>
 
                 <div class="mb-4">
@@ -31,7 +29,17 @@
                 </div>
 
                 <h3 class="text-lg font-semibold mb-2">Selected Items</h3>
-                <div id="selected-items-container"></div>
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border border-gray-300 p-2">Item Name</th>
+                            <th class="border border-gray-300 p-2">Unit Price</th>
+                            <th class="border border-gray-300 p-2">Quantity</th>
+                            <th class="border border-gray-300 p-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="selected-items-container"></tbody>
+                </table>
 
                 <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded mt-4">Submit Request</button>
             </form>
@@ -51,28 +59,25 @@
                     </tr>
                 </thead>
                 <tbody id="item-table-body">
-                    @if(isset($existingItems) && count($existingItems) > 0)
-                        @foreach($existingItems as $item)
-                            @if($item->office_id == auth()->user()->office_id)
-                                <tr>
-                                    <td class="border border-gray-300 p-2 text-center">
-                                        <input type="checkbox" value="{{ $item->item_name }}" 
-                                               data-id="{{ $item->id }}" 
-                                               data-price="{{ $item->unit_price }}" 
-                                               onclick="addItemToRequest(this)">
-                                    </td>
-                                    <td class="border border-gray-300 p-2">{{ $item->item_name }}</td>
-                                    <td class="border border-gray-300 p-2">{{ number_format($item->unit_price, 2) }}</td>
-                                </tr>
-                            @endif
-                        @endforeach
-                    @else
+                    @foreach($existingItems as $item)
                         <tr>
-                            <td colspan="3" class="text-center text-gray-500 p-2">No items found for your office.</td>
+                            <td class="border border-gray-300 p-2 text-center">
+                                <input type="checkbox" value="{{ $item->item_name }}" 
+                                       data-id="{{ $item->id }}" 
+                                       data-price="{{ $item->unit_price }}" 
+                                       onclick="addItemToRequest(this)">
+                            </td>
+                            <td class="border border-gray-300 p-2">{{ $item->item_name }}</td>
+                            <td class="border border-gray-300 p-2">{{ number_format($item->unit_price, 2) }}</td>
                         </tr>
-                    @endif
+                    @endforeach
                 </tbody>
             </table>
+
+            <!-- Pagination -->
+            <div class="mt-4">
+                {{ $existingItems->links() }}
+            </div>
 
             <!-- Button to Add New Item -->
             <button type="button" onclick="showAddItemModal()" class="bg-blue-500 text-white px-4 py-2 rounded mt-4 w-full">
@@ -82,7 +87,7 @@
     </div>
 </div>
 
-<!-- Add New Item Modal (Hidden by default) -->
+<!-- Add New Item Modal -->
 <div id="addItemModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
     <div class="bg-white p-6 rounded shadow-lg w-1/3">
         <h3 class="text-lg font-semibold mb-4">Add New Item</h3>
@@ -107,13 +112,20 @@
 
             const container = document.getElementById('selected-items-container');
             const itemHtml = `
-                <div class="mb-4 border p-4 rounded" id="selected-item-${itemId}">
-                    <input type="hidden" name="items[${itemId}][item_name]" value="${itemName}">
-                    <label>Item: ${itemName}</label>
-                    <input type="number" name="items[${itemId}][quantity]" placeholder="Quantity" class="border rounded p-2 w-full" required min="1">
-                    <input type="number" name="items[${itemId}][unit_price]" value="${unitPrice}" class="border rounded p-2 w-full mt-2" readonly>
-                    <button type="button" onclick="removeSelectedItem(${itemId})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">Remove</button>
-                </div>
+                <tr id="selected-item-${itemId}">
+                    <td class="border border-gray-300 p-2">
+                        <input type="text" name="items[${itemId}][item_name]" value="${itemName}" class="border rounded p-2 w-full" readonly>
+                    </td>
+                    <td class="border border-gray-300 p-2">
+                        <input type="number" name="items[${itemId}][unit_price]" value="${unitPrice}" class="border rounded p-2 w-full" readonly>
+                    </td>
+                    <td class="border border-gray-300 p-2">
+                        <input type="number" name="items[${itemId}][quantity]" class="border rounded p-2 w-full" required min="1">
+                    </td>
+                    <td class="border border-gray-300 p-2">
+                        <button type="button" onclick="removeSelectedItem('${itemId}')" class="bg-red-500 text-white px-2 py-1 rounded">Remove</button>
+                    </td>
+                </tr>
             `;
             container.insertAdjacentHTML('beforeend', itemHtml);
         } else {
@@ -126,16 +138,6 @@
         document.querySelector(`input[data-id="${itemId}"]`).checked = false;
     }
 
-    function filterItems() {
-        let input = document.getElementById("searchItem").value.toLowerCase();
-        let rows = document.querySelectorAll("#item-table-body tr");
-
-        rows.forEach(row => {
-            let itemName = row.cells[1].textContent.toLowerCase();
-            row.style.display = itemName.includes(input) ? "" : "none";
-        });
-    }
-
     function showAddItemModal() {
         document.getElementById("addItemModal").classList.remove("hidden");
     }
@@ -145,27 +147,35 @@
     }
 
     function addNewItem() {
-        let itemName = document.getElementById("newItemName").value.trim();
-        let itemPrice = document.getElementById("newItemPrice").value.trim();
+    let itemName = document.getElementById("newItemName").value.trim();
+    let itemPrice = document.getElementById("newItemPrice").value.trim();
 
-        if (itemName === "" || itemPrice === "") {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        const container = document.getElementById("item-table-body");
-        const newItemHtml = `
-            <tr>
-                <td class="border border-gray-300 p-2 text-center">
-                    <input type="checkbox" value="${itemName}" data-price="${itemPrice}" onclick="addItemToRequest(this)">
-                </td>
-                <td class="border border-gray-300 p-2">${itemName}</td>
-                <td class="border border-gray-300 p-2">${parseFloat(itemPrice).toFixed(2)}</td>
-            </tr>
-        `;
-
-        container.insertAdjacentHTML("beforeend", newItemHtml);
-        hideAddItemModal();
+    if (itemName === "" || itemPrice === "") {
+        alert("Please fill in all fields.");
+        return;
     }
+
+    fetch("{{ route('staff.requests.addItem') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ 
+            item_name: itemName, 
+            unit_price: parseFloat(itemPrice)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Reload page to show new item
+        } else {
+            alert("Error: " + data.error);
+        }
+    })
+    .catch(error => console.error("Fetch error:", error));
+}
+
 </script>
 @endsection

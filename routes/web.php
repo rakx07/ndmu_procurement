@@ -114,6 +114,10 @@ Route::middleware(['auth', 'role:2'])->group(function () {
     Route::get('/supervisor/approve/{id}', [SupervisorController::class, 'approveRequestView'])->name('supervisor.approve_request');
     Route::post('/supervisor/approve/{id}', [SupervisorController::class, 'approve'])->name('supervisor.approve');
     Route::post('/supervisor/reject/{id}', [SupervisorController::class, 'reject'])->name('supervisor.reject');
+    Route::get('/supervisor/request/{id}/items', [SupervisorController::class, 'getRequestItems']);
+    Route::get('/supervisor/approved-requests', [SupervisorController::class, 'approvedRequests'])
+    ->name('supervisor.approved_requests');
+
 });
 
 /*

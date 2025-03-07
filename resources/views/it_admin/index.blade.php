@@ -166,6 +166,14 @@
         document.getElementById('supervisorField').classList.toggle('d-none', role !== '0');
         document.getElementById('adminField').classList.toggle('d-none', role !== '0' && role !== '2');
     }
+    document.addEventListener('DOMContentLoaded', function () {
+    let editUserModal = document.getElementById('editUserModal');
+
+    editUserModal.addEventListener('hidden.bs.modal', function () {
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+    });
+});
 </script>
 
 <!-- ✅ Bootstrap JS -->

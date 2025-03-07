@@ -126,6 +126,17 @@ class SupervisorController extends Controller
 
             return view('supervisor.approved_list_requests', compact('approvedRequests')); // ✅ Update View Name
         }
+    public function getApprovedRequestItems($id)
+        {
+            $user = Auth::user();
+            $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
 
+            // Ensure the Supervisor can only view their assigned staff's requests
+            if ($procurementRequest->approved_by !== $user->id) {
+                return response()->json(['error' => 'Unauthorized access'], 403);
+            }
+
+            return response()->json($procurementRequest->items);
+        }
 
 }

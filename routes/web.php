@@ -117,6 +117,8 @@ Route::middleware(['auth', 'role:2'])->group(function () {
     Route::get('/supervisor/request/{id}/items', [SupervisorController::class, 'getRequestItems']);
     Route::get('/supervisor/approved-requests', [SupervisorController::class, 'approvedRequests'])
     ->name('supervisor.approved_requests');
+    Route::get('/supervisor/approved-request/{id}/items', [SupervisorController::class, 'getApprovedRequestItems']);
+
 
 });
 

@@ -56,14 +56,14 @@
 
 <!-- ✅ Full-Screen Modal for Editing Users -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg"> <!-- ✅ Balanced modal width -->
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editUserForm" method="POST">
+                <form id="editUserForm" method="POST" action="">
                     @csrf
                     @method('PUT')
 
@@ -95,7 +95,7 @@
                         </div>
                         <div class="col-md-4">
                             <label for="role" class="form-label">Role</label>
-                            <select class="form-control" id="role" name="role">
+                            <select class="form-control" id="role" name="role" onchange="toggleRoleFields()">
                                 <option value="0">Staff</option>
                                 <option value="1">Purchasing Officer</option>
                                 <option value="2">Supervisor</option>
@@ -107,19 +107,23 @@
                     </div>
 
                     <div class="row g-3 mt-2">
-                        <div class="col-md-6">
-                            <label for="office_id" class="form-label">Office</label>
-                            <select class="form-control" id="office_id" name="office_id">
-                                @foreach ($offices as $office)
-                                    <option value="{{ $office->id }}">{{ $office->name }}</option>
+                        <div class="col-md-6" id="supervisorField">
+                            <label for="supervisor_id" class="form-label">Assign Supervisor</label>
+                            <select class="form-control" id="supervisor_id" name="supervisor_id">
+                                <option value="">Select Supervisor</option>
+                                @foreach ($supervisors as $supervisor)
+                                    <option value="{{ $supervisor->id }}">{{ $supervisor->firstname }} {{ $supervisor->lastname }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-control" id="status" name="status">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
+
+                        <div class="col-md-6" id="adminField">
+                            <label for="administrator_id" class="form-label">Assign Administrator</label>
+                            <select class="form-control" id="administrator_id" name="administrator_id">
+                                <option value="">Select Administrator</option>
+                                @foreach ($administrators as $admin)
+                                    <option value="{{ $admin->id }}">{{ $admin->firstname }} {{ $admin->lastname }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -131,15 +135,17 @@
     </div>
 </div>
 
-<!-- ✅ JavaScript for Modal and Status Update -->
+<!-- ✅ JavaScript for Modal Behavior -->
 <script>
     function populateModal(user) {
-        let editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        console.log(user); // ✅ Debugging
 
-        // Set form action
-        document.getElementById("editUserForm").action = `/users/${user.id}/update`;
+        let modalElement = document.getElementById('editUserModal');
+        let editUserModal = new bootstrap.Modal(modalElement);
 
-        // Populate fields
+        let form = document.getElementById("editUserForm");
+        form.setAttribute("action", `/it_admin/update/${user.id}`);
+
         document.getElementById("user_id").value = user.id;
         document.getElementById("employee_id").value = user.employee_id;
         document.getElementById("lastname").value = user.lastname;
@@ -147,48 +153,20 @@
         document.getElementById("middlename").value = user.middlename ?? ''; 
         document.getElementById("email").value = user.email;
         document.getElementById("role").value = user.role;
-        document.getElementById("status").value = user.status ? '1' : '0';
 
-        // Select the correct office
-        let officeDropdown = document.getElementById("office_id");
-        for (let i = 0; i < officeDropdown.options.length; i++) {
-            if (officeDropdown.options[i].value == user.office_id) {
-                officeDropdown.options[i].selected = true;
-                break;
-            }
-        }
+        document.getElementById("supervisor_id").value = user.supervisor_id ?? '';
+        document.getElementById("administrator_id").value = user.administrator_id ?? '';
 
-        // Show modal
-        editModal.show();
+        toggleRoleFields();
+        editUserModal.show();
     }
 
-    // ✅ Ensure modal closes properly
-    document.getElementById('editUserModal').addEventListener('hidden.bs.modal', function () {
-        // Remove any lingering backdrop
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        document.body.classList.remove('modal-open'); // Remove Bootstrap's modal-open class
-    });
-
-    function toggleUserStatus(userId) {
-        fetch(`/users/${userId}/toggle-status`, {
-            method: "POST",
-            headers: {
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                "Content-Type": "application/json"
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                let statusSpan = document.getElementById(`status-${userId}`);
-                statusSpan.innerText = data.status;
-                statusSpan.className = `badge ${data.status_class}`;
-            }
-        })
-        .catch(error => console.error("Error:", error));
+    function toggleRoleFields() {
+        let role = document.getElementById("role").value;
+        document.getElementById('supervisorField').classList.toggle('d-none', role !== '0');
+        document.getElementById('adminField').classList.toggle('d-none', role !== '0' && role !== '2');
     }
 </script>
-
 
 <!-- ✅ Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

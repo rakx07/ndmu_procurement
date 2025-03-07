@@ -132,9 +132,10 @@ Route::middleware(['auth', 'role:5'])->group(function () {
     Route::get('/user-management', [ITAdminController::class, 'index'])->name('user.management');
     Route::get('/it-admin/create', [ITAdminController::class, 'create'])->name('it_admin.create');
     Route::post('/it-admin/store', [ITAdminController::class, 'store'])->name('it_admin.store');
-    Route::put('/users/{id}/update', [ITAdminController::class, 'update'])->name('users.update');
     Route::post('/it_admin/toggle-status/{id}', [ITAdminController::class, 'toggleStatus'])->name('it_admin.toggleStatus');
     Route::post('/it_admin/suspend/{id}', [ITAdminController::class, 'suspend'])->name('it_admin.suspend');
+    Route::put('/it_admin/update/{id}', [ITAdminController::class, 'update'])->name('it_admin.update');
+
 });
 
 /*

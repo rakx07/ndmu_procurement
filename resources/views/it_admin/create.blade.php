@@ -21,30 +21,25 @@
             <!-- Employee ID & Email -->
             <div class="col-md-6">
                 <label for="employee_id" class="form-label fw-bold">Employee ID</label>
-                <input type="text" id="employee_id" name="employee_id" required 
-                    class="form-control required-field">
+                <input type="text" id="employee_id" name="employee_id" required class="form-control required-field">
             </div>
             <div class="col-md-6">
                 <label for="email" class="form-label fw-bold">Email Address</label>
-                <input type="email" id="email" name="email" required 
-                    class="form-control required-field">
+                <input type="email" id="email" name="email" required class="form-control required-field">
             </div>
 
             <!-- Last Name, First Name, Middle Name -->
             <div class="col-md-6">
                 <label for="lastname" class="form-label fw-bold">Last Name</label>
-                <input type="text" id="lastname" name="lastname" required 
-                    class="form-control required-field">
+                <input type="text" id="lastname" name="lastname" required class="form-control required-field">
             </div>
             <div class="col-md-6">
                 <label for="firstname" class="form-label fw-bold">First Name</label>
-                <input type="text" id="firstname" name="firstname" required 
-                    class="form-control required-field">
+                <input type="text" id="firstname" name="firstname" required class="form-control required-field">
             </div>
             <div class="col-md-6">
                 <label for="middlename" class="form-label fw-bold">Middle Name (Optional)</label>
-                <input type="text" id="middlename" name="middlename" 
-                    class="form-control">
+                <input type="text" id="middlename" name="middlename" class="form-control">
             </div>
 
             <!-- Role -->
@@ -58,6 +53,28 @@
                     <option value="3">Administrator</option>
                     <option value="4">Comptroller</option>
                     <option value="5">IT Admin</option>
+                </select>
+            </div>
+
+            <!-- Supervisor Selection (For Staff & Supervisors) -->
+            <div class="col-md-6 d-none" id="supervisorField">
+                <label for="supervisor_id" class="form-label fw-bold">Assign Supervisor</label>
+                <select id="supervisor_id" name="supervisor_id" class="form-select">
+                    <option value="">Select Supervisor</option>
+                    @foreach($supervisors as $supervisor)
+                        <option value="{{ $supervisor->id }}">{{ $supervisor->firstname }} {{ $supervisor->lastname }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Administrator Selection (For Staff & Supervisors) -->
+            <div class="col-md-6 d-none" id="adminField">
+                <label for="administrator_id" class="form-label fw-bold">Assign Administrator</label>
+                <select id="administrator_id" name="administrator_id" class="form-select">
+                    <option value="">Select Administrator</option>
+                    @foreach($administrators as $admin)
+                        <option value="{{ $admin->id }}">{{ $admin->firstname }} {{ $admin->lastname }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -75,10 +92,7 @@
 
         <!-- Buttons Section -->
         <div class="mt-4 text-center">
-            <!-- Cancel Button -->
             <a href="{{ url()->previous() }}" class="btn btn-secondary px-4">Cancel</a>
-
-            <!-- Save Button -->
             <button type="submit" id="submitBtn" class="btn btn-primary px-4" disabled>Save</button>
         </div>
     </form>
@@ -86,7 +100,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('userForm');
+        const roleSelect = document.getElementById('role');
+        const supervisorField = document.getElementById('supervisorField');
+        const adminField = document.getElementById('adminField');
         const submitBtn = document.getElementById('submitBtn');
         const requiredFields = document.querySelectorAll('.required-field');
 
@@ -110,12 +126,27 @@
             }
         }
 
+        roleSelect.addEventListener('change', function () {
+            let selectedRole = roleSelect.value;
+
+            if (selectedRole == '0') { // Staff: Show both Supervisor and Administrator dropdowns
+                supervisorField.classList.remove('d-none');
+                adminField.classList.remove('d-none');
+            } else if (selectedRole == '2') { // Supervisor: Only show Administrator dropdown
+                adminField.classList.remove('d-none');
+                supervisorField.classList.add('d-none');
+            } else { // Hide both for other roles
+                supervisorField.classList.add('d-none');
+                adminField.classList.add('d-none');
+            }
+        });
+
         requiredFields.forEach(field => {
             field.addEventListener('input', checkFormCompletion);
             field.addEventListener('change', checkFormCompletion);
         });
 
-        checkFormCompletion(); // Run on page load in case form is pre-filled
+        checkFormCompletion();
     });
 </script>
 @endsection

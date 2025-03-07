@@ -63,7 +63,7 @@ class SupervisorController extends Controller
     Approval::create([
         'request_id' => $procurementRequest->id,
         'approver_id' => $user->id,
-        'role' => 'Supervisor',
+        'role' => $user->role, // ✅ Correct: Use role ID (integer)
         'status' => 'supervisor_approved',
     ]);
 

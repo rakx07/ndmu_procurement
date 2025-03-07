@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,8 +12,18 @@ class CreateApprovalsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('request_id');
             $table->unsignedBigInteger('approver_id');
-            $table->integer('role');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->integer('role'); // Keep as integer (0 = Staff, 2 = Supervisor, etc.)
+
+            // Updated status ENUM to support multiple approval levels
+            $table->enum('status', [
+                'pending',
+                'supervisor_approved',
+                'admin_approved',
+                'comptroller_approved',
+                'approved', // Final approval status
+                'rejected'
+            ])->default('pending');
+
             $table->text('remarks')->nullable();
             $table->timestamps();
 
@@ -20,6 +31,7 @@ class CreateApprovalsTable extends Migration
             $table->foreign('approver_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
+
     public function down()
     {
         Schema::dropIfExists('approvals');

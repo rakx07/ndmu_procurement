@@ -13,6 +13,7 @@ use App\Http\Controllers\AuditTrailController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SupervisorController;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -159,6 +160,10 @@ Route::middleware(['auth', 'role:1'])->group(function () {
 */
 Route::middleware(['auth', 'role:3'])->group(function () {
     Route::get('audit-trails', [AuditTrailController::class, 'index'])->name('audit_trails.index');
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/request/{id}', [AdminController::class, 'show'])->name('admin.show');
+    Route::post('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
+    Route::post('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');
 });
 
 /*

@@ -25,7 +25,7 @@ class RoleMiddleware
         Log::info('Middleware Check - User ID: ' . Auth::user()->id . ' | Role: ' . $userRole);
         Log::info('Required Roles (from route middleware): ' . json_encode($requiredRoles));
 
-        // Redirect users to their respective dashboards if they lack the correct role
+        // Redirect users if they lack the correct role
         if (!in_array($userRole, $requiredRoles, true)) {
             Log::warning('Unauthorized access attempt by user ID: ' . Auth::user()->id . ' | Role: ' . $userRole);
             return redirect($this->redirectToDashboard($userRole))->with('error', 'Access denied. You do not have the required role.');
@@ -42,11 +42,18 @@ class RoleMiddleware
         switch ($role) {
             case 0:
                 return route('staff.dashboard'); // Redirect Staff
+            case 1:
+                return route('purchasing_officer.dashboard'); // Redirect Purchasing Officer
             case 2:
                 return route('supervisor.dashboard'); // Redirect Supervisor
+            case 3:
+                return route('administrator.dashboard'); // Redirect Administrator
+            case 4:
+                return route('comptroller.dashboard'); // Redirect Comptroller
             case 5:
                 return route('it_admin.dashboard'); // Redirect IT Admin
             default:
+                Log::error('Unexpected role encountered: ' . $role);
                 return route('home'); // Redirect to home if role is undefined
         }
     }

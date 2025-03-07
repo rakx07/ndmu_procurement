@@ -38,11 +38,15 @@
                                     View
                                 </a>
                                 @if($request->status == 'pending')
-                                    <a href="{{ route('supervisor.approve_request', $request->id) }}" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
-                                        Approve
-                                    </a>
-                                    <form action="{{ route('supervisor.reject', $request->id) }}" method="POST">
+                                    <form action="{{ route('supervisor.approve', $request->id) }}" method="POST">
                                         @csrf
+                                        <button type="submit" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                                            Approve
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('supervisor.reject', $request->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to reject this request?');">
+                                        @csrf
+                                        <input type="text" name="remarks" placeholder="Reason for rejection" required class="border p-1 rounded">
                                         <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
                                             Reject
                                         </button>

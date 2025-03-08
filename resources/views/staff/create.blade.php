@@ -105,22 +105,38 @@
 </div>
 
 <script>
-    function addItemToRequest(checkbox) {
-        if (checkbox.checked) {
-            const itemName = checkbox.getAttribute('data-item-name');
-            const unitPrice = checkbox.getAttribute('data-price') || 0;
+    let selectedItems = {}; // Store selected items to retain them
 
-            const container = document.getElementById('selected-items-container');
+    function addItemToRequest(checkbox) {
+        const itemName = checkbox.getAttribute('data-item-name');
+        const unitPrice = checkbox.getAttribute('data-price') || 0;
+
+        if (checkbox.checked) {
+            selectedItems[itemName] = { unit_price: unitPrice, quantity: 1 };
+            updateSelectedItemsTable();
+        } else {
+            delete selectedItems[itemName];
+            updateSelectedItemsTable();
+        }
+    }
+
+    function updateSelectedItemsTable() {
+        const container = document.getElementById('selected-items-container');
+        container.innerHTML = ''; // Clear table before updating
+
+        Object.keys(selectedItems).forEach((itemName) => {
+            const item = selectedItems[itemName];
             const itemHtml = `
                 <tr id="selected-item-${itemName.replace(/\s+/g, '-')}">
                     <td class="border border-gray-300 p-2">
                         <input type="text" name="items[${itemName}][item_name]" value="${itemName}" class="border rounded p-2 w-full" readonly>
                     </td>
                     <td class="border border-gray-300 p-2">
-                        <input type="number" name="items[${itemName}][unit_price]" value="${unitPrice}" class="border rounded p-2 w-full" readonly>
+                        <input type="number" name="items[${itemName}][unit_price]" value="${item.unit_price}" class="border rounded p-2 w-full" readonly>
                     </td>
                     <td class="border border-gray-300 p-2">
-                        <input type="number" name="items[${itemName}][quantity]" class="border rounded p-2 w-full" required min="1">
+                        <input type="number" name="items[${itemName}][quantity]" class="border rounded p-2 w-full" required min="1" value="${item.quantity}"
+                            onchange="selectedItems['${itemName}'].quantity = this.value">
                     </td>
                     <td class="border border-gray-300 p-2">
                         <button type="button" onclick="removeSelectedItem('${itemName.replace(/\s+/g, '-')}')" class="bg-red-500 text-white px-2 py-1 rounded">Remove</button>
@@ -128,14 +144,13 @@
                 </tr>
             `;
             container.insertAdjacentHTML('beforeend', itemHtml);
-        } else {
-            removeSelectedItem(checkbox.getAttribute('data-item-name').replace(/\s+/g, '-'));
-        }
+        });
     }
 
     function removeSelectedItem(itemName) {
-        document.getElementById(`selected-item-${itemName}`)?.remove();
-        document.querySelector(`input[data-item-name="${itemName}"]`).checked = false;
+        const actualName = itemName.replace(/-/g, ' '); // Restore spaces
+        delete selectedItems[actualName];
+        updateSelectedItemsTable();
     }
 
     function showAddItemModal() {
@@ -166,12 +181,32 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                addItemToTable(itemName, itemPrice); // Append new item without reloading
+                hideAddItemModal();
             } else {
                 alert("Error: " + data.error);
             }
         })
         .catch(error => console.error("Fetch error:", error));
     }
+
+    function addItemToTable(itemName, unitPrice) {
+        const tableBody = document.getElementById("item-table-body");
+
+        const newRow = `
+            <tr>
+                <td class="border border-gray-300 p-2 text-center">
+                    <input type="checkbox" value="${itemName}" 
+                           data-item-name="${itemName}" 
+                           data-price="${unitPrice}" 
+                           onclick="addItemToRequest(this)">
+                </td>
+                <td class="border border-gray-300 p-2">${itemName}</td>
+                <td class="border border-gray-300 p-2">${parseFloat(unitPrice).toFixed(2)}</td>
+            </tr>
+        `;
+        tableBody.insertAdjacentHTML('beforeend', newRow);
+    }
 </script>
+
 @endsection

@@ -25,6 +25,9 @@
             left: 0;
             overflow-y: auto;
             padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .sidebar.collapsed {
             width: 80px;
@@ -41,7 +44,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
         .sidebar .nav-link.active {
-            background: #28a745 !important; /* Highlight active link */
+            background: #28a745 !important;
             font-weight: bold;
             border-radius: 5px;
         }
@@ -75,7 +78,6 @@
         .content.collapsed {
             margin-left: 80px;
         }
-        /* Submenu styles */
         .submenu {
             display: none;
             padding-left: 30px;
@@ -88,54 +90,55 @@
 <body>
     <!-- ✅ Sidebar -->
     <nav class="sidebar" id="sidebar">
-        <button class="toggle-btn" onclick="toggleSidebar()">
-            <i class="fas fa-bars"></i>
-        </button>
-        <ul class="nav flex-column mt-4">
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                    <i class="fas fa-home"></i> <span class="nav-text">Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
-                    <i class="fas fa-user"></i> <span class="nav-text">Profile</span>
-                </a>
-            </li>
-            <!-- Manage Users with Persistent Collapsible Submenu -->
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="toggleSubMenu(event, 'userSubmenu')">
-                    <i class="fas fa-users"></i> <span class="nav-text">Manage Users</span>
-                    <i class="fas fa-chevron-down ms-auto"></i>
-                </a>
-                <ul id="userSubmenu" class="nav flex-column submenu">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('user.management') ? 'active' : '' }}" href="{{ route('user.management') }}">
-                            <i class="fas fa-list"></i> <span class="nav-text">User List</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('it-admin/create') ? 'active' : '' }}" href="{{ url('/it-admin/create') }}">
-                            <i class="fas fa-user-plus"></i> <span class="nav-text">Create User</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('settings') ? 'active' : '' }}" href="{{ route('settings') }}">
-                    <i class="fas fa-cog"></i> <span class="nav-text">Settings</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-danger" href="{{ route('logout') }}" 
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Logout</span>
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                    @csrf
-                </form>
-            </li>
-        </ul>
+        <div>
+            <button class="toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <ul class="nav flex-column mt-4">
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                        <i class="fas fa-home"></i> <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
+                        <i class="fas fa-user"></i> <span class="nav-text">Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="toggleSubMenu(event, 'userSubmenu')">
+                        <i class="fas fa-users"></i> <span class="nav-text">Manage Users</span>
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <ul id="userSubmenu" class="nav flex-column submenu">
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('user.management') ? 'active' : '' }}" href="{{ route('user.management') }}">
+                                <i class="fas fa-list"></i> <span class="nav-text">User List</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->is('it-admin/create') ? 'active' : '' }}" href="{{ url('/it-admin/create') }}">
+                                <i class="fas fa-user-plus"></i> <span class="nav-text">Create User</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('settings') ? 'active' : '' }}" href="{{ route('settings') }}">
+                        <i class="fas fa-cog"></i> <span class="nav-text">Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="mt-auto p-3">
+            <a class="nav-link text-danger" href="{{ route('logout') }}" 
+               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Logout</span>
+            </a>
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                @csrf
+            </form>
+        </div>
     </nav>
 
     <!-- ✅ Page Content -->
@@ -148,7 +151,6 @@
         function toggleSidebar() {
             let sidebar = document.getElementById("sidebar");
             let content = document.getElementById("main-content");
-
             sidebar.classList.toggle("collapsed");
             content.classList.toggle("collapsed");
         }
@@ -157,7 +159,6 @@
             event.preventDefault();
             let submenu = document.getElementById(submenuId);
             let isOpen = submenu.classList.contains("open");
-
             if (isOpen) {
                 submenu.classList.remove("open");
                 localStorage.setItem(submenuId, "closed");
@@ -167,11 +168,9 @@
             }
         }
 
-        // Keep submenu open if stored in localStorage
         document.addEventListener("DOMContentLoaded", function() {
             let submenu = document.getElementById("userSubmenu");
             let submenuState = localStorage.getItem("userSubmenu");
-
             if (submenuState === "open" || window.location.pathname.includes('/it-admin/create') || window.location.pathname.includes('user.management')) {
                 submenu.classList.add("open");
             }

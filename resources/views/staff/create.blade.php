@@ -162,33 +162,42 @@
     }
 
     function addNewItem() {
-        let itemName = document.getElementById("newItemName").value.trim();
-        let itemPrice = document.getElementById("newItemPrice").value.trim();
+    let itemName = document.getElementById("newItemName").value.trim();
+    let itemPrice = document.getElementById("newItemPrice").value.trim();
 
-        if (itemName === "" || itemPrice === "") {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        fetch("{{ route('staff.requests.addItem') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ item_name: itemName, unit_price: parseFloat(itemPrice) })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                addItemToTable(itemName, itemPrice); // Append new item without reloading
-                hideAddItemModal();
-            } else {
-                alert("Error: " + data.error);
-            }
-        })
-        .catch(error => console.error("Fetch error:", error));
+    if (itemName === "" || itemPrice === "") {
+        alert("Please fill in all fields.");
+        return;
     }
+
+    fetch("{{ route('staff.requests.addItem') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ item_name: itemName, unit_price: parseFloat(itemPrice) })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            addItemToTable(itemName, itemPrice); // Append new item without reloading
+            hideAddItemModal();
+            
+            // ✅ Clear the modal input fields after adding the item
+            document.getElementById("newItemName").value = "";
+            document.getElementById("newItemPrice").value = "";
+        } else {
+            alert("Error: " + data.error);
+        }
+    })
+    .catch(error => console.error("Fetch error:", error));
+}
+
+function hideAddItemModal() {
+    document.getElementById("addItemModal").classList.add("hidden");
+}
+
 
     function addItemToTable(itemName, unitPrice) {
         const tableBody = document.getElementById("item-table-body");

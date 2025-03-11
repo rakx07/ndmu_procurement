@@ -31,21 +31,32 @@ public function create()
 }
 
 
-    public function store(Request $request)
-    {
-        // Validate the input fields
-        $request->validate([
-            'item_name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:1',
-        ]);
-    
-        // Save new item
-        ProcurementItem::create([
-            'item_name' => $request->input('item_name'),
-            'quantity' => $request->input('quantity'),
-        ]);
-    
-        return redirect()->route('purchasing_officer.dashboard')->with('success', 'Item added successfully!');
-    }
-    
+public function store(Request $request)
+{
+    // Validate input
+    $request->validate([
+        'item_name' => 'required|string|max:255',
+        'quantity' => 'required|integer|min:1',
+        'unit_price' => 'required|numeric|min:0',
+        'supplier_name' => 'nullable|string',
+        'item_category_id' => 'required|exists:item_categories,id',
+    ]);
+
+    // ✅ Calculate total price
+    $total_price = $request->quantity * $request->unit_price;
+
+    // ✅ Store item in database
+    ProcurementItem::create([
+        'item_name' => $request->item_name,
+        'quantity' => $request->quantity,
+        'unit_price' => $request->unit_price,
+        'total_price' => $total_price, // ✅ Save total price
+        'supplier_name' => $request->supplier_name,
+        'item_category_id' => $request->item_category_id,
+    ]);
+
+    return redirect()->route('purchasing_officer.dashboard')->with('success', 'Item added successfully!');
+}
+
+
 }

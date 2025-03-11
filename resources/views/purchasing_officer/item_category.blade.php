@@ -1,34 +1,60 @@
 @extends('layouts.purchasingapp')
 
 @section('content')
-<div class="bg-white p-6 shadow rounded">
-    <h2 class="text-lg font-semibold mb-4">Manage Item Categories</h2>
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Left Side: Add Category Form -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4">
+                <h2 class="text-lg font-semibold mb-4">Add New Item Category</h2>
+                <form method="POST" action="{{ route('item-categories.store') }}">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Category Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="Enter category name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" placeholder="Enter description (optional)"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Add Category</button>
+                </form>
+            </div>
+        </div>
 
-    <form method="POST" action="{{ route('item-categories.store') }}">
-        @csrf
-        <input type="text" name="name" placeholder="Category Name" class="border p-2 w-full mb-2" required>
-        <textarea name="description" placeholder="Description (optional)" class="border p-2 w-full mb-2"></textarea>
-        <button type="submit" class="bg-blue-500 text-white p-2 w-full">Add Category</button>
-    </form>
-
-    <h3 class="text-lg font-semibold mt-6">Existing Categories</h3>
-    <table class="w-full border-collapse border border-gray-300 mt-4">
-        <thead>
-            <tr class="bg-gray-200">
-                <th class="border p-2">ID</th>
-                <th class="border p-2">Category Name</th>
-                <th class="border p-2">Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($categories as $category)
-            <tr>
-                <td class="border p-2">{{ $category->id }}</td>
-                <td class="border p-2">{{ $category->name }}</td>
-                <td class="border p-2">{{ $category->description }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <!-- Right Side: Categories Table -->
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4">
+                <h4 class="mb-3">Existing Item Categories</h4>
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Category Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($categories as $category)
+                        <tr>
+                            <td>{{ $category->id }}</td>
+                            <td>{{ $category->name }}</td>
+                            <td>{{ $category->description }}</td>
+                            <td>
+                                <a href="#" class="btn btn-primary btn-sm">Edit</a>
+                                <form action="{{ route('item-categories.destroy', $category->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

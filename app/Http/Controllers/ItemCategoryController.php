@@ -24,4 +24,13 @@ class ItemCategoryController extends Controller
 
         return redirect()->back()->with('success', 'Category added successfully');
     }
+
+    public function destroy($id)
+{
+    $category = ItemCategory::findOrFail($id);
+    $category->delete();
+
+    return redirect()->back()->with('success', 'Category deleted successfully');
+}
+
 }

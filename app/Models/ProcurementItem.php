@@ -17,7 +17,9 @@ class ProcurementItem extends Model
         'total_price', 
         'item_image', 
         'status',
-        'office_id' // ✅ Added office_id to track purchases by office
+        'office_id',
+        'supplier_name', // ✅ Add this
+        'item_category_id', // ✅ Add this
     ];
 
     /**
@@ -35,4 +37,8 @@ class ProcurementItem extends Model
     {
         return $this->belongsTo(Office::class, 'office_id'); // Assuming you have an Office model
     }
+    public function category()
+{
+    return $this->belongsTo(ItemCategory::class, 'item_category_id');
+}
 }

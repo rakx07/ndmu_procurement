@@ -3,51 +3,72 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Models\RequestModel; // Ensure this matches your model
-use App\Models\ProcurementItem; // Use the correct model
-use App\Models\ProcurementRequest; // Use the correct model
-
+use App\Models\ProcurementItem;
+use App\Models\ProcurementRequest;
+use App\Models\ProcurementRequestItem; // Ensure this exists to store request items
 
 class StaffController extends Controller
 {
     public function dashboard()
-{
-    $requests = ProcurementRequest::where('requestor_id', auth()->id())
-                ->with('items') // ✅ Include items related to the request
-                ->orderBy('created_at', 'desc') // ✅ Show newest requests first
-                ->get();
+    {
+        // ✅ Use pagination to fix `$requests->links()` issue
+        $requests = ProcurementRequest::where('requestor_id', auth()->id())
+                    ->with('items')
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10); // ✅ Fix: Use paginate()
 
-    return view('staff.dashboard', compact('requests'));
-}
-
+        return view('staff.dashboard', compact('requests'));
+    }
 
     public function create()
-{
-    $existingItems = ProcurementItem::where('office_id', auth()->user()->office_id)->paginate(10);
-    return view('staff.create', compact('existingItems'));
-}
+    {
+        // ✅ Ensure `office_id` exists before filtering items
+        $existingItems = ProcurementItem::when(auth()->user()->office_id, function ($query) {
+                            return $query->where('office_id', auth()->user()->office_id);
+                        })
+                        ->paginate(10);
+
+        return view('staff.create', compact('existingItems'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'office' => 'required|string',
             'date_requested' => 'required|date',
+            'items' => 'required|array', // ✅ Ensure items are selected
+            'items.*.id' => 'required|exists:procurement_items,id', // ✅ Ensure valid item IDs
+            'items.*.quantity' => 'required|integer|min:1', // ✅ Validate quantity
         ]);
 
-        RequestModel::create([
+        // ✅ Create a new procurement request
+        $procurementRequest = ProcurementRequest::create([
             'requestor_id' => auth()->id(),
             'office' => $request->office,
             'date_requested' => $request->date_requested,
             'status' => 'pending',
-            'remarks' => null,
         ]);
 
-        return redirect()->route('staff.dashboard')->with('success', 'Request submitted.');
+        // ✅ Save selected items in `procurement_request_items`
+        foreach ($request->items as $item) {
+            ProcurementRequestItem::create([
+                'procurement_request_id' => $procurementRequest->id,
+                'procurement_item_id' => $item['id'],
+                'item_name' => ProcurementItem::find($item['id'])->item_name, // ✅ Store item name
+                'unit_price' => ProcurementItem::find($item['id'])->unit_price, // ✅ Store current price
+                'quantity' => $item['quantity'],
+                'total_price' => ProcurementItem::find($item['id'])->unit_price * $item['quantity'],
+            ]);
+        }
+
+        return redirect()->route('staff.dashboard')->with('success', 'Request submitted successfully!');
     }
 
     public function edit($id)
     {
-        $request = RequestModel::where('id', $id)->where('requestor_id', auth()->id())->firstOrFail();
+        $request = ProcurementRequest::where('id', $id)
+                    ->where('requestor_id', auth()->id())
+                    ->firstOrFail();
 
         if ($request->status !== 'pending') {
             return redirect()->route('staff.dashboard')->with('error', 'Cannot edit an approved request.');
@@ -58,7 +79,9 @@ class StaffController extends Controller
 
     public function update(Request $request, $id)
     {
-        $requestData = RequestModel::where('id', $id)->where('requestor_id', auth()->id())->firstOrFail();
+        $requestData = ProcurementRequest::where('id', $id)
+                        ->where('requestor_id', auth()->id())
+                        ->firstOrFail();
 
         if ($requestData->status !== 'pending') {
             return redirect()->route('staff.dashboard')->with('error', 'Cannot update an approved request.');
@@ -74,6 +97,6 @@ class StaffController extends Controller
             'date_requested' => $request->date_requested,
         ]);
 
-        return redirect()->route('staff.dashboard')->with('success', 'Request updated.');
+        return redirect()->route('staff.dashboard')->with('success', 'Request updated successfully.');
     }
 }

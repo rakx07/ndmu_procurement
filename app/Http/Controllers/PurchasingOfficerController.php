@@ -57,7 +57,6 @@ public function store(Request $request)
         'supplier_name' => $request->supplier_name,
         'item_category_id' => $request->item_category_id,
     ]);
-
     return redirect()->route('purchasing_officer.create')->with('success', 'Item added successfully!');
 }
 

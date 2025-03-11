@@ -13,6 +13,6 @@ class ItemCategory extends Model
 
     public function procurementItems()
     {
-        return $this->hasMany(ProcurementItem::class);
+        return $this->hasMany(ProcurementItem::class, 'item_category_id');
     }
 }

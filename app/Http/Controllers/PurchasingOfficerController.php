@@ -20,10 +20,17 @@ class PurchasingOfficerController extends Controller
     ]);
 }
 
-    public function create()
-    {
-        return view('purchasing_officer.create');
-    }
+public function create()
+{
+    // Fetch all categories and procurement items from the database
+    $categories = \App\Models\ItemCategory::all();
+    $procurementItems = \App\Models\ProcurementItem::latest()->get();
+
+    // Pass them to the view
+    return view('purchasing_officer.create', compact('categories', 'procurementItems'));
+}
+
+
     public function store(Request $request)
     {
         // Validate the input fields

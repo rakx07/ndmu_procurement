@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ItemCategoryController;
+use App\Http\Controllers\PurchasingOfficerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +43,8 @@ Route::get('/dashboard', function () {
         switch (auth()->user()->role) {
             case 0:
                 return redirect()->route('staff.dashboard'); // Staff
+            case 1:
+                return redirect()->route('purchasing_officer.dashboard');
             case 2:
                 return redirect()->route('supervisor.dashboard'); // Supervisor
             case 5:
@@ -156,8 +160,26 @@ Route::middleware(['auth'])->group(function () {
 | Purchase Routes (Role: 1 - Purchasing Officer)
 |--------------------------------------------------------------------------
 */
+/*
+|--------------------------------------------------------------------------
+| Purchase Routes (Role: 1 - Purchasing Officer)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'role:1'])->group(function () {
     Route::resource('purchases', PurchaseController::class);
+
+    // ✅ Purchasing Officer Dashboard
+    Route::get('/purchasing-officer/dashboard', [PurchasingOfficerController::class, 'dashboard'])->name('purchasing_officer.dashboard');
+
+    // ✅ Add Missing Route for Creating Items
+    Route::get('/purchasing-officer/create', [PurchasingOfficerController::class, 'create'])->name('purchasing_officer.create');
+
+    // ✅ Route to Store Created Items
+    Route::post('/purchasing-officer/store', [PurchasingOfficerController::class, 'store'])->name('purchasing_officer.store');
+
+    // ✅ Item Category Management Routes
+    Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
+    Route::post('/item-categories', [ItemCategoryController::class, 'store'])->name('item-categories.store');
 });
 
 /*

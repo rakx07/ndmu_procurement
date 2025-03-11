@@ -177,11 +177,15 @@ Route::middleware(['auth', 'role:1'])->group(function () {
     // ✅ Route to Store Created Items
     Route::post('/purchasing-officer/store', [PurchasingOfficerController::class, 'store'])->name('purchasing_officer.store');
 
+    // ✅ Route to Delete Procurement Items
+    Route::delete('/purchasing-officer/{id}', [PurchasingOfficerController::class, 'destroy'])->name('purchasing_officer.destroy');
+
     // ✅ Item Category Management Routes
     Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
     Route::post('/item-categories', [ItemCategoryController::class, 'store'])->name('item-categories.store');
     Route::delete('/item-categories/{id}', [ItemCategoryController::class, 'destroy'])->name('item-categories.destroy'); // ✅ Added DELETE Route
 });
+
 
 
 /*

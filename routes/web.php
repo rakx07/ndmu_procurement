@@ -86,25 +86,20 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
     Route::get('/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
 
-    // Procurement Request Management
+    // ✅ Procurement Request Management
     Route::get('/request/create', [ProcurementRequestController::class, 'create'])->name('staff.requests.create');
-    Route::post('/request', [StaffController::class, 'store'])->name('staff.requests.store');
+    Route::post('/request', [ProcurementRequestController::class, 'store'])->name('staff.requests.store');
     Route::get('/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
     Route::put('/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
 
-    // Procurement Requests - Viewing and Storage
+    // ✅ Procurement Requests - Viewing Only
     Route::get('/requests', [ProcurementRequestController::class, 'index'])->name('staff.requests.index');
-    Route::post('/requests/store', [ProcurementRequestController::class, 'store'])->name('staff.requests.store');
     Route::get('/requests/{id}', [ProcurementRequestController::class, 'show'])->name('staff.requests.show');
 
-    // ✅ FIX: Removed extra "staff/" to avoid duplication
-    Route::get('/request/{id}/items', [ProcurementRequestController::class, 'getRequestItems'])->name('staff.requests.items');
+    // ✅ Staff Can View Available Items But Not Add
+    Route::get('/items', [ProcurementRequestController::class, 'availableItems'])->name('staff.items.index');
 });
 
-// ✅ FIX: Allow all authenticated users to add items
-Route::middleware(['auth'])->group(function () {
-    Route::post('/staff/request/add-item', [ProcurementRequestController::class, 'addItem'])->name('staff.requests.addItem');
-});
 
 
 /*
@@ -165,26 +160,19 @@ Route::middleware(['auth'])->group(function () {
 | Purchase Routes (Role: 1 - Purchasing Officer)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'role:1'])->group(function () {
-    Route::resource('purchases', PurchaseController::class);
+Route::middleware(['auth', 'role:1'])->prefix('purchasing-officer')->group(function () {
+    Route::get('/dashboard', [PurchasingOfficerController::class, 'dashboard'])->name('purchasing_officer.dashboard');
 
-    // ✅ Purchasing Officer Dashboard
-    Route::get('/purchasing-officer/dashboard', [PurchasingOfficerController::class, 'dashboard'])->name('purchasing_officer.dashboard');
+    // ✅ Only the Purchasing Officer Can Add, Edit, and Delete Items
+    Route::get('/items', [PurchasingOfficerController::class, 'index'])->name('purchasing_officer.items.index');
+    Route::get('/items/create', [PurchasingOfficerController::class, 'create'])->name('purchasing_officer.items.create');
+    Route::post('/items', [PurchasingOfficerController::class, 'store'])->name('purchasing_officer.items.store');
+    Route::delete('/items/{id}', [PurchasingOfficerController::class, 'destroy'])->name('purchasing_officer.items.destroy');
 
-    // ✅ Add Missing Route for Creating Items
-    Route::get('/purchasing-officer/create', [PurchasingOfficerController::class, 'create'])->name('purchasing_officer.create');
-
-    // ✅ Route to Store Created Items
-    Route::post('/purchasing-officer/store', [PurchasingOfficerController::class, 'store'])->name('purchasing_officer.store');
-
-    // ✅ Route to Delete Procurement Items
-    Route::delete('/purchasing-officer/{id}', [PurchasingOfficerController::class, 'destroy'])->name('purchasing_officer.destroy');
-
-    // ✅ Item Category Management Routes
-    Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
-    Route::post('/item-categories', [ItemCategoryController::class, 'store'])->name('item-categories.store');
-    Route::delete('/item-categories/{id}', [ItemCategoryController::class, 'destroy'])->name('item-categories.destroy'); // ✅ Added DELETE Route
+    // ✅ Fix: Ensure Only Purchasing Officer Can Add Items
+    Route::post('/items/add', [PurchasingOfficerController::class, 'addItem'])->name('purchasing_officer.items.add');
 });
+
 
 
 

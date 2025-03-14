@@ -177,10 +177,12 @@ class ProcurementRequestController extends Controller
         }
 
         // Get distinct items based on item_name and office_id, keeping the latest unit_price
-        $existingItems = ProcurementItem::where('office_id', $user->office_id)
-            ->select('item_name', DB::raw('MAX(unit_price) as unit_price'))
-            ->groupBy('item_name')
-            ->paginate(10); // ✅ Added pagination
+        $existingItems = ProcurementItem::where('status', 'available') // ✅ Only available items
+        ->select('item_name', DB::raw('MAX(unit_price) as unit_price'))
+        ->groupBy('item_name')
+        ->orderBy('item_name', 'asc')
+        ->paginate(10);
+    
 
         return view('staff.create', compact('user', 'existingItems'));
     }
@@ -262,4 +264,21 @@ class ProcurementRequestController extends Controller
 
         return response()->json($items);
     }
+    public function availableItems()
+{
+    // Fetch available procurement items
+    $existingItems = ProcurementItem::orderBy('item_name', 'asc')->paginate(10);
+
+    \Log::info('🔍 Items Retrieved Count:', ['count' => $existingItems->total()]);
+
+    if ($existingItems->isEmpty()) {
+        \Log::warning('⚠️ No procurement items found in the database.');
+    } else {
+        \Log::info('✅ Procurement Items Retrieved:', $existingItems->toArray());
+    }
+
+    return view('staff.create', compact('existingItems'));
+}
+
+
 }

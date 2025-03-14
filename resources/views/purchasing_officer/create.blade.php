@@ -7,7 +7,7 @@
         <div class="col-md-4">
             <div class="card shadow-sm p-4">
                 <h2 class="text-2xl font-semibold mb-4">Create New Item</h2>
-                <form action="{{ route('purchasing_officer.store') }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('purchasing_officer.items.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Item Name</label>
@@ -62,33 +62,36 @@
                         </tr>
                     </thead>
                     <tbody>
-                                @foreach($procurementItems as $item)
-                                <tr>
-                                    <td>{{ $item->id }}</td>
-                                    <td>{{ $item->item_name }}</td>
-                                    <td>{{ $item->supplier_name ?? 'No Supplier' }}</td>
-                                    <td>{{ $item->category ? $item->category->name : 'No Category' }}</td>
-                                    <td>{{ $item->quantity }}</td>
-                                    <td>{{ number_format($item->unit_price, 2) }}</td>
-                                    <td>{{ number_format($item->total_price, 2) }}</td>
-                                    <td><span class="badge bg-info">{{ ucfirst($item->status) }}</span></td>
-                                    <td>
-                                        <a href="#" class="btn btn-primary btn-sm">Edit</a>
-                                        
-                                        <!-- Delete Button -->
-                                        <form action="{{ route('purchasing_officer.destroy', $item->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm"
-                                                    onclick="return confirm('Are you sure you want to delete this item?');">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-
+                        @foreach($procurementItems as $item)
+                        <tr>
+                            <td>{{ $item->id }}</td>
+                            <td>{{ $item->item_name }}</td>
+                            <td>{{ $item->supplier_name ?? 'No Supplier' }}</td>
+                            <td>{{ $item->category ? $item->category->name : 'No Category' }}</td>
+                            <td>{{ $item->quantity }}</td>
+                            <td>{{ number_format($item->unit_price, 2) }}</td>
+                            <td>{{ number_format($item->total_price, 2) }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ isset($item->status) ? ucfirst($item->status) : 'N/A' }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-primary btn-sm">Edit</a>
+                                
+                                <!-- Delete Button -->
+                                <form action="{{ route('purchasing_officer.items.destroy', $item->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Are you sure you want to delete this item?');">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
                 </table>
             </div>
         </div>

@@ -16,6 +16,7 @@ use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\PurchasingOfficerController;
+use Illuminate\Support\Facades\Auth; // ✅ Fix: Added Auth facade
 
 /*
 |--------------------------------------------------------------------------
@@ -39,8 +40,8 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 Route::get('/dashboard', function () {
-    if (auth()->check()) {
-        switch (auth()->user()->role) {
+    if (Auth::check()) { // ✅ Fix: Use Auth facade
+        switch (Auth::user()->role) {
             case 0:
                 return redirect()->route('staff.dashboard'); // Staff
             case 1:
@@ -82,7 +83,6 @@ Route::middleware(['auth'])->group(function () {
 | Staff Routes (Role: 0) - Staff Users Only
 |--------------------------------------------------------------------------
 */
-// Staff Routes (Only Role 0 can access)
 Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
     Route::get('/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
 
@@ -100,8 +100,6 @@ Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
     Route::get('/items', [ProcurementRequestController::class, 'availableItems'])->name('staff.items.index');
 });
 
-
-
 /*
 |--------------------------------------------------------------------------
 | Supervisor Routes (Role: 2) - Supervisors Only
@@ -114,11 +112,8 @@ Route::middleware(['auth', 'role:2'])->group(function () {
     Route::post('/supervisor/approve/{id}', [SupervisorController::class, 'approve'])->name('supervisor.approve');
     Route::post('/supervisor/reject/{id}', [SupervisorController::class, 'reject'])->name('supervisor.reject');
     Route::get('/supervisor/request/{id}/items', [SupervisorController::class, 'getRequestItems']);
-    Route::get('/supervisor/approved-requests', [SupervisorController::class, 'approvedRequests'])
-    ->name('supervisor.approved_requests');
+    Route::get('/supervisor/approved-requests', [SupervisorController::class, 'approvedRequests'])->name('supervisor.approved_requests');
     Route::get('/supervisor/approved-request/{id}/items', [SupervisorController::class, 'getApprovedRequestItems']);
-
-
 });
 
 /*
@@ -135,26 +130,23 @@ Route::middleware(['auth', 'role:5'])->group(function () {
     Route::post('/it_admin/suspend/{id}', [ITAdminController::class, 'suspend'])->name('it_admin.suspend');
     Route::put('/it_admin/update/{id}', [ITAdminController::class, 'update'])->name('it_admin.update');
 
+    // ✅ IT Admin Settings Route (Fix)
+    Route::get('/it-admin/settings', [ITAdminController::class, 'settings'])->name('it_admin.settings');
 });
+
+
 
 /*
 |--------------------------------------------------------------------------
-| Approval Routes (Role: 2 - Supervisor, 3 - Admin, 4 - Comptroller)
+| Approval Routes (Restricted to Specific Roles)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
-    Route::middleware(['role:2', 'role:3', 'role:4'])->group(function () {
-        Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
-        Route::post('approvals/{id}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
-        Route::post('approvals/{id}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
-    });
+    Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+    Route::post('approvals/{id}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
+    Route::post('approvals/{id}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Purchase Routes (Role: 1 - Purchasing Officer)
-|--------------------------------------------------------------------------
-*/
 /*
 |--------------------------------------------------------------------------
 | Purchase Routes (Role: 1 - Purchasing Officer)
@@ -163,47 +155,19 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:1'])->prefix('purchasing-officer')->group(function () {
     Route::get('/dashboard', [PurchasingOfficerController::class, 'dashboard'])->name('purchasing_officer.dashboard');
 
-    // ✅ Only the Purchasing Officer Can Add, Edit, and Delete Items
+    // ✅ Items Management
     Route::get('/items', [PurchasingOfficerController::class, 'index'])->name('purchasing_officer.items.index');
     Route::get('/items/create', [PurchasingOfficerController::class, 'create'])->name('purchasing_officer.items.create');
     Route::post('/items', [PurchasingOfficerController::class, 'store'])->name('purchasing_officer.items.store');
     Route::delete('/items/{id}', [PurchasingOfficerController::class, 'destroy'])->name('purchasing_officer.items.destroy');
 
-    // ✅ Fix: Ensure Only Purchasing Officer Can Add Items
-    Route::post('/items/add', [PurchasingOfficerController::class, 'addItem'])->name('purchasing_officer.items.add');
+    // ✅ Item Categories Management
+    Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
+    Route::post('/item-categories', [ItemCategoryController::class, 'store'])->name('item-categories.store');
+    Route::delete('/item-categories/{id}', [ItemCategoryController::class, 'destroy'])->name('item-categories.destroy');
 });
 
-
-
-
-/*
-|--------------------------------------------------------------------------
-| Audit Trails (Role: 3 - Admins Only)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'role:3'])->group(function () {
-    Route::get('audit-trails', [AuditTrailController::class, 'index'])->name('audit_trails.index');
-    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/admin/request/{id}', [AdminController::class, 'show'])->name('admin.show');
-    Route::post('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
-    Route::post('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');
-});
-
-/*
-|--------------------------------------------------------------------------
-| General Settings Route (Available to All Authenticated Users)
-|--------------------------------------------------------------------------
-*/
 Route::middleware(['auth'])->get('/settings', function () {
-    return view('settings');
+    return view('it_admin.settings'); // Change this to the correct path of your settings view
 })->name('settings');
 
-/*
-|--------------------------------------------------------------------------
-| Password Change Routes (Available to All Authenticated Users)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
-    Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('change_password_form');
-    Route::put('/change-password', [PasswordController::class, 'updatePassword'])->name('change_password');
-});

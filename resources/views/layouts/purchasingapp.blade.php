@@ -114,7 +114,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('purchasing_officer.create') ? 'active' : '' }}" href="{{ route('purchasing_officer.create') }}">
+                    <a class="nav-link {{ request()->routeIs('purchasing_officer.create') ? 'active' : '' }}" href="{{ route('purchasing_officer.items.create') }}">
                         <i class="fas fa-plus-circle"></i> <span class="nav-text">Create Item</span>
                     </a>
                 </li>

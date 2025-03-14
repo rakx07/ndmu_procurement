@@ -34,6 +34,15 @@ class ITAdminController extends Controller
     }
 
     /**
+     * Show IT Admin Settings Page (✅ FIXED)
+     */
+    public function settings()
+    {
+        Log::info("🔧 IT Admin accessed settings.");
+        return view('it_admin.settings');
+    }
+
+    /**
      * Show the user creation form.
      */
     public function create()
@@ -58,8 +67,8 @@ class ITAdminController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'role' => 'required|integer',
             'office_id' => 'required|exists:offices,id',
-            'supervisor_id' => 'nullable|exists:users,id', // Assigned if Role = Staff
-            'administrator_id' => 'nullable|exists:users,id', // Assigned if Role = Supervisor
+            'supervisor_id' => 'nullable|exists:users,id',
+            'administrator_id' => 'nullable|exists:users,id',
         ]);
 
         $tempPassword = Str::random(10);
@@ -73,8 +82,8 @@ class ITAdminController extends Controller
             'password' => Hash::make($tempPassword),
             'role' => $request->role,
             'office_id' => $request->office_id,
-            'supervisor_id' => ($request->role == 0) ? $request->supervisor_id : null, // Only for Staff
-            'administrator_id' => ($request->role == 0 || $request->role == 2) ? $request->administrator_id : null, // Staff & Supervisor
+            'supervisor_id' => ($request->role == 0) ? $request->supervisor_id : null,
+            'administrator_id' => ($request->role == 0 || $request->role == 2) ? $request->administrator_id : null,
             'status' => 1,
             'must_change_password' => true,
         ]);
@@ -93,53 +102,50 @@ class ITAdminController extends Controller
      * Update an existing user.
      */
     public function update(Request $request, $id)
-{
-    Log::info("✅ Update request received: ", $request->all());
+    {
+        Log::info("✅ Update request received: ", $request->all());
 
-    $validatedData = $request->validate([
-        'employee_id' => 'required|string|max:255|unique:users,employee_id,' . $id,
-        'lastname' => 'required|string|max:255',
-        'firstname' => 'required|string|max:255',
-        'middlename' => 'nullable|string|max:255',
-        'email' => 'required|email|max:255|unique:users,email,' . $id,
-        'role' => 'required|integer',
-        'office_id' => 'nullable|exists:offices,id',
-        'status' => 'nullable|in:0,1',
-        'supervisor_id' => 'nullable|exists:users,id',
-        'administrator_id' => 'nullable|exists:users,id',
-    ]);
+        $validatedData = $request->validate([
+            'employee_id' => 'required|string|max:255|unique:users,employee_id,' . $id,
+            'lastname' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'middlename' => 'nullable|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'role' => 'required|integer',
+            'office_id' => 'nullable|exists:offices,id',
+            'status' => 'nullable|in:0,1',
+            'supervisor_id' => 'nullable|exists:users,id',
+            'administrator_id' => 'nullable|exists:users,id',
+        ]);
 
-    Log::debug("✅ Validated data: ", $validatedData);
+        Log::debug("✅ Validated data: ", $validatedData);
 
-    $user = User::findOrFail($id);
-    Log::info("✅ Current user data before update: ", $user->toArray());
+        $user = User::findOrFail($id);
+        Log::info("✅ Current user data before update: ", $user->toArray());
 
-    // Ensure `status` and `role` are properly converted
-    $user->fill([
-        'employee_id' => $request->employee_id,
-        'lastname' => $request->lastname,
-        'firstname' => $request->firstname,
-        'middlename' => $request->middlename,
-        'email' => $request->email,
-        'role' => (int) $request->role,
-        'office_id' => $request->office_id,
-        'status' => (int) ($request->status ?? $user->status),  // Use existing if not provided
-        'supervisor_id' => ($request->role == 0) ? $request->supervisor_id : null,
-        'administrator_id' => ($request->role == 0 || $request->role == 2) ? $request->administrator_id : null,
-    ]);
+        $user->fill([
+            'employee_id' => $request->employee_id,
+            'lastname' => $request->lastname,
+            'firstname' => $request->firstname,
+            'middlename' => $request->middlename,
+            'email' => $request->email,
+            'role' => (int) $request->role,
+            'office_id' => $request->office_id,
+            'status' => (int) ($request->status ?? $user->status),
+            'supervisor_id' => ($request->role == 0) ? $request->supervisor_id : null,
+            'administrator_id' => ($request->role == 0 || $request->role == 2) ? $request->administrator_id : null,
+        ]);
 
-    if ($user->isDirty()) {  // ✅ Check if changes are detected
-        Log::info("🔄 Changes detected, updating user...");
-        $user->save();
-        Log::info("✅ User updated successfully: ", $user->toArray());
-        return back()->with('success', 'User updated successfully!');
-    } else {
-        Log::warning("⚠️ No changes detected, update skipped for user ID: $id");
-        return back()->with('warning', 'No changes were made.');
+        if ($user->isDirty()) {
+            Log::info("🔄 Changes detected, updating user...");
+            $user->save();
+            Log::info("✅ User updated successfully: ", $user->toArray());
+            return back()->with('success', 'User updated successfully!');
+        } else {
+            Log::warning("⚠️ No changes detected, update skipped for user ID: $id");
+            return back()->with('warning', 'No changes were made.');
+        }
     }
-}
-
-
 
     /**
      * Reset a user's password and generate a new temporary password.
@@ -151,7 +157,7 @@ class ITAdminController extends Controller
 
         $user->update([
             'password' => Hash::make($newTempPassword),
-            'must_change_password' => true, // ✅ Require password change after reset
+            'must_change_password' => true,
         ]);
 
         return back()->with([
@@ -166,7 +172,7 @@ class ITAdminController extends Controller
     public function toggleStatus($id)
     {
         $user = User::findOrFail($id);
-        $user->status = !$user->status; // Toggle active/inactive
+        $user->status = !$user->status;
         $user->save();
 
         return back()->with('success', 'User status updated successfully!');
@@ -178,7 +184,7 @@ class ITAdminController extends Controller
     public function suspend($id)
     {
         $user = User::findOrFail($id);
-        $user->status = 0; // Set user as inactive/suspended
+        $user->status = 0;
         $user->save();
 
         return back()->with('success', 'User suspended successfully!');

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User; // Ensure the User model is imported
+use App\Models\User; // Ensure User model is imported
 
 class ChangePasswordController extends Controller
 {
@@ -14,7 +14,7 @@ class ChangePasswordController extends Controller
      */
     public function showChangePasswordForm()
     {
-        return view('auth.change_password');
+        return view('auth.change-password');
     }
 
     /**
@@ -31,15 +31,14 @@ class ChangePasswordController extends Controller
 
         // Check if the current password is correct
         if (!Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+            return redirect()->route('change_password_form')->withErrors(['current_password' => 'Current password is incorrect.']);
         }
 
-        // Ensure $user is an instance of User before calling save()
-        if ($user instanceof User) {
-            $user->password = Hash::make($request->password);
-            $user->password_changed_at = now();
-            $user->save();
-        }
+        // Update password and reset "must_change_password" field
+        $user->password = Hash::make($request->password);
+        $user->password_changed_at = now();
+        $user->must_change_password = false;
+        $user->save();
 
         return redirect()->route('dashboard')->with('success', 'Password changed successfully.');
     }

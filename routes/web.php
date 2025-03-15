@@ -173,3 +173,9 @@ Route::middleware(['auth'])->get('/settings', function () {
     return view('it_admin.settings'); // Change this to the correct path of your settings view
 })->name('settings');
 
+
+Route::middleware(['auth', 'must.change.password'])->group(function () {
+    Route::get('/change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('change_password_form');
+    Route::put('/change-password', [ChangePasswordController::class, 'updatePassword'])->name('update_password');
+});
+

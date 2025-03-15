@@ -72,5 +72,6 @@ class Kernel extends HttpKernel
         'throttle' => ThrottleRequests::class,
         'verified' => EnsureEmailIsVerified::class,
         'password.change' => \App\Http\Middleware\CheckPasswordChange::class,
+        'must.change.password' => \App\Http\Middleware\MustChangePassword::class,
     ];
 }

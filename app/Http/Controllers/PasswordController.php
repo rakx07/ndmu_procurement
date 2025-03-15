@@ -14,17 +14,20 @@ class PasswordController extends Controller
     }
 
     public function updatePassword(Request $request)
-    {
-        $request->validate([
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+{
+    $request->validate([
+        'password' => 'required|string|min:8|confirmed',
+    ]);
 
-        $user = Auth::user();
-        $user->password = Hash::make($request->password);
-        $user->must_change_password = false;
-        $user->password_changed_at = now();
-        $user->save();
+    $user = Auth::user();
+    $user->password = Hash::make($request->password);
+    $user->must_change_password = false; // ✅ Ensure this is reset
+    $user->password_changed_at = now(); // ✅ Track password change time
+    $user->save();
 
-        return redirect('/dashboard')->with('success', 'Password changed successfully.');
-    }
+    Auth::login($user); // ✅ Ensure user stays logged in
+
+    return redirect()->route('dashboard')->with('success', 'Password changed successfully.');
+}
+
 }

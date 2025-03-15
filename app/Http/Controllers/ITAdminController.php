@@ -94,9 +94,11 @@ class ITAdminController extends Controller
 
         return redirect()->back()->with([
             'success' => 'User created successfully!',
+            'email' => $user->email, // Include email in session
             'temp_password' => $tempPassword,
         ]);
     }
+
 
     /**
      * Update an existing user.

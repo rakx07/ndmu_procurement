@@ -7,12 +7,13 @@
     @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show text-center p-2 rounded-lg mb-3" role="alert">
         <strong>User Created Successfully!</strong> <br>
+        Email: <strong>{{ session('email') }}</strong> <br>
         @if(session('temp_password'))
             Temporary Password: <strong>{{ session('temp_password') }}</strong>
         @endif
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    @endif
+@endif
 
     <form method="POST" action="{{ route('it_admin.store') }}" id="userForm" class="bg-white p-6 rounded-lg shadow-md">
         @csrf

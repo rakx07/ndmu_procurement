@@ -52,6 +52,10 @@ class RoleMiddleware
                 return route('comptroller.dashboard'); // Redirect Comptroller
             case 5:
                 return route('it_admin.dashboard'); // Redirect IT Admin
+            case 6:
+                return route('bookroom.dashboard'); // Redirect BookRoom
+            case 7:
+                return route('ppi.dashboard'); // Redirect PPI
             default:
                 Log::error('Unexpected role encountered: ' . $role);
                 return route('home'); // Redirect to home if role is undefined

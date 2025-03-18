@@ -153,6 +153,8 @@ class User extends Authenticatable
             3 => 'Administrator',
             4 => 'Comptroller',
             5 => 'IT Admin',
+            6 => 'Book Room',
+            7 => 'Physical Plant Inventory',
         ];
 
         return $roles[$this->role] ?? 'Unknown';

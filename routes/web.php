@@ -47,8 +47,15 @@ Route::get('/dashboard', function () {
                 return redirect()->route('purchasing_officer.dashboard');
             case 2:
                 return redirect()->route('supervisor.dashboard'); // Supervisor
+            case 4:
+                return redirect()->route('comptroller.dashboard'); // IT Admin
             case 5:
                 return redirect()->route('it_admin.dashboard'); // IT Admin
+            case 6:
+                return redirect()->route('bookroom.dashboard'); // IT Admin
+            case 7:
+                return redirect()->route('ppi.dashboard'); // IT Admin
+                
             default:
                 return view('dashboard'); // Placeholder for other roles
         }
@@ -160,11 +167,6 @@ Route::middleware(['auth'])->group(function () {
 | Purchase Routes (Role: 1 - Purchasing Officer)
 |--------------------------------------------------------------------------
 */
-/*
-|--------------------------------------------------------------------------
-| Purchase Routes (Role: 1 - Purchasing Officer)
-|--------------------------------------------------------------------------
-*/
 Route::middleware(['auth', 'role:1'])->group(function () {
     Route::resource('purchases', PurchaseController::class);
 
@@ -218,4 +220,22 @@ Route::middleware(['auth'])->get('/settings', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('change_password_form');
     Route::put('/change-password', [PasswordController::class, 'updatePassword'])->name('change_password');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Book Room Routes (Role: 6) - Book Room Users Only
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:6'])->group(function () {
+    Route::get('/bookroom/dashboard', [BookRoomController::class, 'dashboard'])->name('bookroom.dashboard');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Physical Plant Routes (Role: 7) - Physical Plant Users Only
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:7'])->group(function () {
+    Route::get('/ppi/dashboard', [PhysicalPlantController::class, 'dashboard'])->name('ppi.dashboard');
 });

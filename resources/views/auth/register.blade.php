@@ -59,6 +59,8 @@
                 <option value="3">Administrator</option>
                 <option value="4">Comptroller</option>
                 <option value="5">IT Admin</option>
+                <option value="6">Book Room</option>
+                <option value="7">Physcial Plant Inventory</option>
             </select>
             <x-input-error :messages="$errors->get('role')" class="mt-2" />
         </div>

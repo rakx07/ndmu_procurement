@@ -102,6 +102,8 @@
                                 <option value="3">Administrator</option>
                                 <option value="4">Comptroller</option>
                                 <option value="5">IT Admin</option>
+                                <option value="6">Book ROom</option>
+                                <option value="5">Physical Plant Inventory</option>
                             </select>
                         </div>
                     </div>

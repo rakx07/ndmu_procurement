@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::table('procurement_requests', function (Blueprint $table) {
             $table->boolean('comptroller_approved')->default(false)->after('needs_admin_approval');
+            $table->boolean('administrator_approved')->default(false)->after('comptroller_approved');
         });
     }
 
@@ -16,6 +17,7 @@ return new class extends Migration {
     {
         Schema::table('procurement_requests', function (Blueprint $table) {
             $table->dropColumn('comptroller_approved');
+            $table->dropColumn('administrator_approved');
         });
     }
 };

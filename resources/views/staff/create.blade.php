@@ -162,22 +162,29 @@
     }
 
     function updateSelectedItemsTable() {
-        const container = document.getElementById('selected-items-container');
-        container.innerHTML = ''; // Clear table before updating
+    const container = document.getElementById('selected-items-container');
+    container.innerHTML = ''; // Clear before updating
 
-        Object.keys(selectedItems).forEach((itemId) => {
-            const item = selectedItems[itemId];
-            const itemHtml = `
-                <tr id="selected-item-${itemId}">
-                    <td>${item.item_name}</td>
-                    <td>${item.unit_price.toFixed(2)}</td>
-                    <td><input type="number" class="form-control" required min="1" value="${item.quantity}" onchange="selectedItems['${itemId}'].quantity = this.value"></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedItem('${itemId}')">Remove</button></td>
-                </tr>
-            `;
-            container.insertAdjacentHTML('beforeend', itemHtml);
-        });
-    }
+    Object.keys(selectedItems).forEach((itemId) => {
+        const item = selectedItems[itemId];
+        const itemHtml = `
+            <tr id="selected-item-${itemId}">
+                <td>${item.item_name}</td>
+                <td>${item.unit_price.toFixed(2)}</td>
+                <td>
+                    <input type="number" class="form-control" name="items[${itemId}][quantity]" min="1" value="${item.quantity}" required>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedItem('${itemId}')">Remove</button>
+                </td>
+            </tr>
+            <input type="hidden" name="items[${itemId}][item_name]" value="${item.item_name}">
+            <input type="hidden" name="items[${itemId}][unit_price]" value="${item.unit_price}">
+        `;
+        container.insertAdjacentHTML('beforeend', itemHtml);
+    });
+}
+
 
     function removeSelectedItem(itemId) {
         delete selectedItems[itemId];

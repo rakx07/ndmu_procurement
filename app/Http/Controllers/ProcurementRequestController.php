@@ -8,6 +8,8 @@ use App\Models\ProcurementRequest;
 use App\Models\ProcurementRequestItem;
 use App\Models\Approval;
 use App\Models\ProcurementItem;
+use Illuminate\Support\Facades\DB;
+
 
 class ProcurementRequestController extends Controller
 {
@@ -32,28 +34,35 @@ class ProcurementRequestController extends Controller
             default => ProcurementRequest::with('items')->latest()->paginate(10),
         };
 
-        return view('procurement_requests.index', compact('requests'));
+        return redirect()->route('staff.dashboard')->with('success', 'Procurement request submitted successfully!');
+
     }
 
     /**
      * Store a new procurement request along with its items.
      */
     public function store(Request $request)
-    {
-        \Log::info('Store method triggered:', $request->all()); // Debugging Log
-    
-        $request->validate([
-            'office' => 'required|string',
-            'date_requested' => 'required|date',
-            'items' => 'required|array',
-            'items.*.item_name' => 'required|string',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'nullable|numeric|min:0',
-        ]);
-    
-        $user = Auth::user();
-    
-        // ✅ Create Procurement Request
+{
+    \Log::info('Store method triggered:', $request->all()); // Debugging Log
+
+    $request->validate([
+        'office' => 'required|string',
+        'date_requested' => 'required|date',
+        'items' => 'required|array',
+        'items.*.item_name' => 'required|string',
+        'items.*.quantity' => 'required|integer|min:1',
+        'items.*.unit_price' => 'nullable|numeric|min:0',
+    ]);
+
+    \Log::info('Received items:', ['items' => $request->items]); // Log Items for Debugging
+
+    if (!is_array($request->items) || empty($request->items)) {
+        return redirect()->back()->with('error', 'No items were selected.');
+    }
+
+    $user = Auth::user();
+
+    DB::transaction(function () use ($user, $request) {
         $procurementRequest = ProcurementRequest::create([
             'requestor_id' => $user->id,
             'office_id' => $user->office_id, // Ensure this field exists
@@ -61,8 +70,7 @@ class ProcurementRequestController extends Controller
             'date_requested' => $request->date_requested,
             'status' => 'pending',
         ]);
-    
-        // ✅ Save Each Item
+
         foreach ($request->items as $item) {
             ProcurementRequestItem::create([
                 'procurement_request_id' => $procurementRequest->id,
@@ -72,11 +80,12 @@ class ProcurementRequestController extends Controller
                 'total_price' => ($item['unit_price'] ?? 0) * $item['quantity'],
             ]);
         }
-    
-        return redirect()->route('staff.requests.index')->with('success', 'Procurement request created successfully!');
-    }
-    
+    });
 
+    return redirect()->route('staff.requests.index')->with('success', 'Procurement request created successfully!');
+}
+
+    
 
     /**
      * Approve a procurement request based on user role.

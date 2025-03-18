@@ -22,6 +22,15 @@
                         <input type="date" name="date_requested" class="form-control" required value="{{ \Carbon\Carbon::now()->format('Y-m-d') }}">
                     </div>
 
+                    <!-- ✅ Needs Administrator Approval Checkbox -->
+                    <div class="mb-3">
+                        <input type="checkbox" id="needs_admin_approval" name="needs_admin_approval" value="1" onchange="updateApprovalFlow()">
+                        <label for="needs_admin_approval" class="form-label fw-bold ms-2">Needs Administrator Approval?</label>
+                    </div>
+                    
+                    <!-- Hidden input to track approval levels -->
+                    <input type="hidden" id="approval_flow" name="approval_flow" value="supervisor_comptroller_purchasing">
+
                     <h4 class="text-lg font-semibold mb-3">Selected Items</h4>
                     <div class="table-responsive">
                         <table class="table table-bordered">
@@ -146,6 +155,17 @@
             let itemName = row.cells[1].textContent.toLowerCase();
             row.style.display = itemName.includes(searchValue) ? "" : "none";
         });
+    }
+
+    function updateApprovalFlow() {
+        let needsAdminApproval = document.getElementById('needs_admin_approval').checked;
+        let approvalFlowInput = document.getElementById('approval_flow');
+
+        if (needsAdminApproval) {
+            approvalFlowInput.value = "supervisor_administrator_comptroller_purchasing";
+        } else {
+            approvalFlowInput.value = "supervisor_comptroller_purchasing";
+        }
     }
 </script>
 

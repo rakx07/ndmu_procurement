@@ -202,7 +202,8 @@ Route::middleware(['auth', 'role:1'])->group(function () {
 */
 Route::middleware(['auth', 'role:3'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/admin/pending-requests', [AdminController::class, 'dashboard'])->name('admin.pending_requests');
+    Route::get('/admin/pending-requests', [AdminController::class, 'pendingRequests'])->name('admin.pending_requests'); // ✅ FIXED
+
     Route::get('/admin/approved-requests', [AdminController::class, 'approvedRequests'])->name('admin.approved_requests');
     Route::get('/admin/rejected-requests', [AdminController::class, 'rejectedRequests'])->name('admin.rejected_requests');
 
@@ -210,8 +211,6 @@ Route::middleware(['auth', 'role:3'])->group(function () {
     Route::patch('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
     Route::patch('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');
 });
-
-
 
 /*
 |--------------------------------------------------------------------------

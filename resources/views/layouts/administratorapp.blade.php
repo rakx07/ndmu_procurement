@@ -76,11 +76,6 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.manage_users') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
-                    <i class="fas fa-users w-6 text-center"></i> <span class="nav-text">Manage Users</span>
-                </a>
-            </li>
-            <li>
                 <a href="{{ route('profile.edit') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
                     <i class="fas fa-user w-6 text-center"></i> <span class="nav-text">Profile</span>
                 </a>

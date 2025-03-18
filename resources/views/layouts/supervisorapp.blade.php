@@ -58,9 +58,15 @@
                 </a>
             </li>
             <li>
-            <a href="{{ route('supervisor.approved_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
-                <i class="fas fa-check-circle w-6 text-center"></i> 
-                <span class="nav-text">Approved Requests</span>
+                <a href="{{ route('supervisor.approved_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
+                    <i class="fas fa-check-circle w-6 text-center"></i> 
+                    <span class="nav-text">Approved Requests</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('supervisor.rejected_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
+                    <i class="fas fa-times-circle w-6 text-center"></i> 
+                    <span class="nav-text">Rejected Requests</span>
                 </a>
             </li>
             <li>

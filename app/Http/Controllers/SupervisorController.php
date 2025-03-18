@@ -138,5 +138,28 @@ class SupervisorController extends Controller
 
             return response()->json($procurementRequest->items);
         }
+        public function rejectedRequests()
+{
+    $user = Auth::user();
+    $requests = ProcurementRequest::where('status', 'rejected')
+                ->where('office_id', $user->office_id)
+                ->latest()
+                ->paginate(10);
+
+    return view('supervisor.rejected_requests', compact('requests'));
+}
+public function getRejectedRequestItems($id)
+{
+    $user = Auth::user();
+    $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
+
+    // Ensure the Supervisor can only view items of rejected requests in their office
+    if ($procurementRequest->status !== 'rejected' || $procurementRequest->office_id !== $user->office_id) {
+        return response()->json(['error' => 'Unauthorized access'], 403);
+    }
+
+    return response()->json($procurementRequest->items);
+}
+
 
 }

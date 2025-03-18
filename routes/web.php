@@ -132,8 +132,8 @@ Route::middleware(['auth', 'role:2'])->group(function () {
     Route::get('/supervisor/approved-requests', [SupervisorController::class, 'approvedRequests'])
     ->name('supervisor.approved_requests');
     Route::get('/supervisor/approved-request/{id}/items', [SupervisorController::class, 'getApprovedRequestItems']);
-
-
+    Route::get('/supervisor/rejected-requests', [SupervisorController::class, 'rejectedRequests'])->name('supervisor.rejected_requests');
+    Route::get('/supervisor/rejected-requests/{id}/items', [SupervisorController::class, 'getRejectedRequestItems'])->name('supervisor.rejected_requests.items');
 });
 
 /*

@@ -11,14 +11,16 @@ use App\Models\User;
 class AdminController extends Controller
 {
     /**
-     * Show the Administrator Dashboard (List of supervisor-approved requests).
+     * Show the Administrator Dashboard (List of supervisor-approved requests that need admin approval).
      */
     public function dashboard()
     {
         $user = Auth::user();
 
-        // Fetch procurement requests that have been approved by a supervisor but not yet by an administrator
-        $requests = ProcurementRequest::where('status', 'supervisor_approved')->get();
+        // Fetch procurement requests that are approved by a supervisor and require Administrator approval
+        $requests = ProcurementRequest::where('status', 'supervisor_approved')
+                    ->where('needs_admin_approval', true)
+                    ->get();
 
         return view('admin.dashboard', compact('requests'));
     }
@@ -30,8 +32,8 @@ class AdminController extends Controller
     {
         $procurementRequest = ProcurementRequest::findOrFail($id);
 
-        // Ensure only supervisor-approved requests are accessible
-        if ($procurementRequest->status !== 'supervisor_approved') {
+        // Ensure only requests that need admin approval are accessible
+        if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
             return redirect()->route('admin.dashboard')->with('error', 'Unauthorized to view this request.');
         }
 
@@ -46,13 +48,14 @@ class AdminController extends Controller
         $user = Auth::user();
         $procurementRequest = ProcurementRequest::findOrFail($id);
 
-        // Ensure only supervisor-approved requests can be processed
-        if ($procurementRequest->status !== 'supervisor_approved') {
-            return redirect()->route('admin.dashboard')->with('error', 'Only supervisor-approved requests can be processed.');
+        // Ensure only supervisor-approved requests that need admin approval can be processed
+        if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
+            return redirect()->route('admin.dashboard')->with('error', 'Only valid supervisor-approved requests can be processed.');
         }
 
         $procurementRequest->update([
             'status' => 'admin_approved',
+            'needs_admin_approval' => false, // No longer needs admin approval
             'approved_by' => $user->id
         ]);
 
@@ -75,13 +78,19 @@ class AdminController extends Controller
         $user = Auth::user();
         $procurementRequest = ProcurementRequest::findOrFail($id);
 
-        // Ensure only supervisor-approved requests can be rejected by the administrator
-        if ($procurementRequest->status !== 'supervisor_approved') {
-            return redirect()->route('admin.dashboard')->with('error', 'Only supervisor-approved requests can be rejected.');
+        // Ensure only supervisor-approved requests that need admin approval can be rejected
+        if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
+            return redirect()->route('admin.dashboard')->with('error', 'Only valid supervisor-approved requests can be rejected.');
         }
+
+        // Validate the remarks field (ensure it's provided)
+        $request->validate([
+            'remarks' => 'required|string|max:255',
+        ]);
 
         $procurementRequest->update([
             'status' => 'rejected',
+            'needs_admin_approval' => false,
             'remarks' => $request->input('remarks'),
         ]);
 

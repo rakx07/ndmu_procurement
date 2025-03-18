@@ -49,14 +49,16 @@ Route::get('/dashboard', function () {
                 return redirect()->route('purchasing_officer.dashboard');
             case 2:
                 return redirect()->route('supervisor.dashboard'); // Supervisor
+            case 3:
+                return redirect()->route('administrator.dashboard'); // Adminsitrator
             case 4:
-                return redirect()->route('comptroller.dashboard'); // IT Admin
+                return redirect()->route('comptroller.dashboard'); // comptroller
             case 5:
                 return redirect()->route('it_admin.dashboard'); // IT Admin
             case 6:
-                return redirect()->route('bookroom.dashboard'); // IT Admin
+                return redirect()->route('bookroom.dashboard'); // bookroom
             case 7:
-                return redirect()->route('ppi.dashboard'); // IT Admin
+                return redirect()->route('ppi.dashboard'); // ppi
                 
             default:
                 return view('dashboard'); // Placeholder for other roles
@@ -199,12 +201,22 @@ Route::middleware(['auth', 'role:1'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:3'])->group(function () {
+    // Audit Trail
     Route::get('audit-trails', [AuditTrailController::class, 'index'])->name('audit_trails.index');
-    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // Administrator Dashboard
+    Route::get('/administrator/dashboard', [AdminController::class, 'dashboard'])->name('administrator.dashboard');
+
+    // View Procurement Request
     Route::get('/admin/request/{id}', [AdminController::class, 'show'])->name('admin.show');
-    Route::post('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
-    Route::post('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');
+
+    // Approve Procurement Request (PATCH instead of POST)
+    Route::patch('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
+
+    // Reject Procurement Request (PATCH instead of POST)
+    Route::patch('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');
 });
+
 
 /*
 |--------------------------------------------------------------------------

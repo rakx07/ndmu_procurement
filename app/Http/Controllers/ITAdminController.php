@@ -49,45 +49,47 @@ class ITAdminController extends Controller
      * Store a new user with a randomly generated temporary password.
      */
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'employee_id' => 'required|string|max:255|unique:users',
-            'lastname' => 'required|string|max:255',
-            'firstname' => 'required|string|max:255',
-            'middlename' => 'nullable|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users',
-            'role' => 'required|integer',
-            'office_id' => 'required|exists:offices,id',
-            'supervisor_id' => 'nullable|exists:users,id', // Assigned if Role = Staff
-            'administrator_id' => 'nullable|exists:users,id', // Assigned if Role = Supervisor
-        ]);
+{
+    $validatedData = $request->validate([
+        'employee_id' => 'required|string|max:255|unique:users',
+        'lastname' => 'required|string|max:255',
+        'firstname' => 'required|string|max:255',
+        'middlename' => 'nullable|string|max:255',
+        'email' => 'required|string|lowercase|email|max:255|unique:users',
+        'role' => 'required|integer',
+        'office_id' => 'required|exists:offices,id',
+        'supervisor_id' => 'nullable|exists:users,id', // Assigned if Role = Staff
+        'administrator_id' => 'nullable|exists:users,id', // Assigned if Role = Supervisor
+    ]);
 
-        $tempPassword = Str::random(10);
+    $tempPassword = Str::random(10);
 
-        $user = User::create([
-            'employee_id' => $request->employee_id,
-            'lastname' => $request->lastname,
-            'firstname' => $request->firstname,
-            'middlename' => $request->middlename,
-            'email' => strtolower($request->email),
-            'password' => Hash::make($tempPassword),
-            'role' => $request->role,
-            'office_id' => $request->office_id,
-            'supervisor_id' => ($request->role == 0) ? $request->supervisor_id : null, // Only for Staff
-            'administrator_id' => ($request->role == 0 || $request->role == 2) ? $request->administrator_id : null, // Staff & Supervisor
-            'status' => 1,
-            'must_change_password' => true,
-        ]);
+    $user = User::create([
+        'employee_id' => $request->employee_id,
+        'lastname' => $request->lastname,
+        'firstname' => $request->firstname,
+        'middlename' => $request->middlename,
+        'email' => strtolower($request->email),
+        'password' => Hash::make($tempPassword),
+        'role' => $request->role,
+        'office_id' => $request->office_id,
+        'supervisor_id' => ($request->role == 0) ? $request->supervisor_id : null, // Only for Staff
+        'administrator_id' => ($request->role == 0 || $request->role == 2) ? $request->administrator_id : null, // Staff & Supervisor
+        'status' => 1,
+        'must_change_password' => true,
+    ]);
 
-        if (!$user) {
-            return redirect()->back()->withErrors(['error' => 'User creation failed.']);
-        }
-
-        return redirect()->back()->with([
-            'success' => 'User created successfully!',
-            'temp_password' => $tempPassword,
-        ]);
+    if (!$user) {
+        return redirect()->back()->withErrors(['error' => 'User creation failed.']);
     }
+
+    return redirect()->back()->with([
+        'success' => 'User created successfully!',
+        'email' => $user->email, // Return email as well
+        'temp_password' => $tempPassword,
+    ]);
+}
+
 
     /**
      * Update an existing user.

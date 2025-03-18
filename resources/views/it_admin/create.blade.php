@@ -4,15 +4,17 @@
 <div class="container px-4 py-6 mx-auto">
     <h2 class="text-2xl font-bold text-green-700 text-center mb-6 uppercase">Create New User</h2>
 
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show text-center p-2 rounded-lg mb-3" role="alert">
-        <strong>User Created Successfully!</strong> <br>
-        @if(session('temp_password'))
-            Temporary Password: <strong>{{ session('temp_password') }}</strong>
-        @endif
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
+                @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show text-center p-2 rounded-lg mb-3" role="alert">
+                <strong>User Created Successfully!</strong> <br>
+                @if(session('email') && session('temp_password'))
+                    Email: <strong>{{ session('email') }}</strong> <br>
+                    Temporary Password: <strong>{{ session('temp_password') }}</strong>
+                @endif
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+
 
     <form method="POST" action="{{ route('it_admin.store') }}" id="userForm" class="bg-white p-6 rounded-lg shadow-md">
         @csrf

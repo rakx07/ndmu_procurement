@@ -18,11 +18,11 @@ class AdminController extends Controller
         $user = Auth::user();
 
         // Fetch procurement requests that are approved by a supervisor and require Administrator approval
-        $requests = ProcurementRequest::where('status', 'supervisor_approved')
-                    ->where('needs_admin_approval', true)
-                    ->get();
+        $pendingRequests = ProcurementRequest::where('status', 'supervisor_approved')
+                            ->where('needs_admin_approval', true)
+                            ->get();
 
-        return view('admin.dashboard', compact('requests'));
+        return view('admin.dashboard', compact('pendingRequests'));
     }
 
     /**
@@ -53,6 +53,7 @@ class AdminController extends Controller
             return redirect()->route('admin.dashboard')->with('error', 'Only valid supervisor-approved requests can be processed.');
         }
 
+        // Update procurement request status
         $procurementRequest->update([
             'status' => 'admin_approved',
             'needs_admin_approval' => false, // No longer needs admin approval
@@ -88,6 +89,7 @@ class AdminController extends Controller
             'remarks' => 'required|string|max:255',
         ]);
 
+        // Update procurement request status
         $procurementRequest->update([
             'status' => 'rejected',
             'needs_admin_approval' => false,

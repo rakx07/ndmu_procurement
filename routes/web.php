@@ -50,7 +50,7 @@ Route::get('/dashboard', function () {
             case 2:
                 return redirect()->route('supervisor.dashboard'); // Supervisor
             case 3:
-                return redirect()->route('administrator.dashboard'); // Adminsitrator
+                return redirect()->route('admin.dashboard'); // Adminsitrator
             case 4:
                 return redirect()->route('comptroller.dashboard'); // comptroller
             case 5:
@@ -201,21 +201,19 @@ Route::middleware(['auth', 'role:1'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'role:3'])->group(function () {
-    // Audit Trail
-    Route::get('audit-trails', [AuditTrailController::class, 'index'])->name('audit_trails.index');
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/pending-requests', [AdminController::class, 'dashboard'])->name('admin.pending_requests');
+    Route::get('/admin/approved-requests', [AdminController::class, 'approvedRequests'])->name('admin.approved_requests');
+    Route::get('/admin/rejected-requests', [AdminController::class, 'rejectedRequests'])->name('admin.rejected_requests');
 
-    // Administrator Dashboard
-    Route::get('/administrator/dashboard', [AdminController::class, 'dashboard'])->name('administrator.dashboard');
+    // ✅ Add this missing route for managing users:
+    Route::get('/admin/manage-users', [AdminController::class, 'manageUsers'])->name('admin.manage_users');
 
-    // View Procurement Request
     Route::get('/admin/request/{id}', [AdminController::class, 'show'])->name('admin.show');
-
-    // Approve Procurement Request (PATCH instead of POST)
     Route::patch('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
-
-    // Reject Procurement Request (PATCH instead of POST)
     Route::patch('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');
 });
+
 
 
 /*

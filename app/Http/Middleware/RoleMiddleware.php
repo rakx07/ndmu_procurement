@@ -47,7 +47,7 @@ class RoleMiddleware
             case 2:
                 return route('supervisor.dashboard'); // Redirect Supervisor
             case 3:
-                return route('administrator.dashboard'); // Redirect Administrator
+                return route('admin.dashboard'); // Redirect Administrator
             case 4:
                 return route('comptroller.dashboard'); // Redirect Comptroller
             case 5:

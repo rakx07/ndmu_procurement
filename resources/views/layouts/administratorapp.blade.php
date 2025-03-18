@@ -1,4 +1,4 @@
-a<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -53,30 +53,30 @@ a<!DOCTYPE html>
     <nav class="sidebar bg-gray-800 text-white h-screen fixed p-6 flex flex-col justify-between" id="sidebar">
         <ul class="space-y-4">
             <li>
-                <a href="{{ route('administrator.dashboard') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
                     <i class="fas fa-home w-6 text-center"></i> <span class="nav-text">Dashboard</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('administrator.pending_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
+                <a href="{{ route('admin.pending_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
                     <i class="fas fa-clock w-6 text-center"></i> 
                     <span class="nav-text">Pending Requests</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('administrator.approved_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
+                <a href="{{ route('admin.approved_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
                     <i class="fas fa-check-circle w-6 text-center"></i> 
                     <span class="nav-text">Approved Requests</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('administrator.rejected_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
+                <a href="{{ route('admin.rejected_requests') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
                     <i class="fas fa-times-circle w-6 text-center"></i> 
                     <span class="nav-text">Rejected Requests</span>
                 </a>
             </li>
             <li>
-                <a href="{{ route('administrator.manage_users') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
+                <a href="{{ route('admin.manage_users') }}" class="flex items-center px-3 py-2 hover:bg-gray-700 rounded">
                     <i class="fas fa-users w-6 text-center"></i> <span class="nav-text">Manage Users</span>
                 </a>
             </li>

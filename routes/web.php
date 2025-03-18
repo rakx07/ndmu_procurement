@@ -206,9 +206,6 @@ Route::middleware(['auth', 'role:3'])->group(function () {
     Route::get('/admin/approved-requests', [AdminController::class, 'approvedRequests'])->name('admin.approved_requests');
     Route::get('/admin/rejected-requests', [AdminController::class, 'rejectedRequests'])->name('admin.rejected_requests');
 
-    // ✅ Add this missing route for managing users:
-    Route::get('/admin/manage-users', [AdminController::class, 'manageUsers'])->name('admin.manage_users');
-
     Route::get('/admin/request/{id}', [AdminController::class, 'show'])->name('admin.show');
     Route::patch('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
     Route::patch('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');

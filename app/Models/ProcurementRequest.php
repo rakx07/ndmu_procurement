@@ -12,53 +12,98 @@ class ProcurementRequest extends Model
     protected $fillable = [
         'requestor_id', 
         'office', 
-        'office_id', // ✅ FIXED: Added office_id to be saved in database
+        'office_id',
         'date_requested', 
         'status', 
         'remarks', 
-        'approved_by'
+        'approved_by',
+        'needs_admin_approval', // ✅ Added field
+        'comptroller_approved', // ✅ Added field
     ];
 
+    /**
+     * Relationship: Requestor (User who created the request)
+     */
     public function requestor()
     {
         return $this->belongsTo(User::class, 'requestor_id');
     }
 
+    /**
+     * Relationship: Items in the procurement request
+     */
     public function items()
     {
-        return $this->hasMany(ProcurementRequestItem::class, 'procurement_request_id'); // ✅ FIXED: Corrected relationship
+        return $this->hasMany(ProcurementRequestItem::class, 'procurement_request_id');
     }
 
+    /**
+     * Relationship: Approvals (Tracks approvals for the request)
+     */
     public function approvals()
     {
-        return $this->hasMany(Approval::class, 'request_id');
+        return $this->hasMany(Approval::class, 'procurement_request_id'); // ✅ Fixed foreign key
     }
 
+    /**
+     * Relationship: Purchase record (After procurement is complete)
+     */
     public function purchases()
     {
-        return $this->hasOne(Purchase::class, 'request_id');
+        return $this->hasOne(Purchase::class, 'procurement_request_id');
     }
 
+    /**
+     * Relationship: User who last approved the request
+     */
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    public function office()
+    /**
+     * Relationship: Office that made the request
+     */
+    public function officeRelation()
     {
         return $this->belongsTo(Office::class, 'office_id');
     }
 
+    /**
+     * Scope: Fetch pending requests
+     */
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    public function scopeApproved($query)
+    /**
+     * Scope: Fetch requests approved by Supervisor
+     */
+    public function scopeSupervisorApproved($query)
     {
-        return $query->where('status', 'approved');
+        return $query->where('status', 'supervisor_approved');
     }
 
+    /**
+     * Scope: Fetch requests approved by Administrator
+     */
+    public function scopeAdminApproved($query)
+    {
+        return $query->where('status', 'admin_approved');
+    }
+
+    /**
+     * Scope: Fetch requests approved by Comptroller
+     */
+    public function scopeComptrollerApproved($query)
+    {
+        return $query->where('status', 'comptroller_approved');
+    }
+
+    /**
+     * Scope: Fetch requests made by a specific user
+     */
     public function scopeByRequestor($query, $userId)
     {
         return $query->where('requestor_id', $userId);

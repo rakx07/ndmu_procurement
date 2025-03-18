@@ -53,7 +53,6 @@
         </table>
     </div>
 </div>
-
 <!-- ✅ Full-Screen Modal for Editing Users -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -102,13 +101,25 @@
                                 <option value="3">Administrator</option>
                                 <option value="4">Comptroller</option>
                                 <option value="5">IT Admin</option>
-                                <option value="6">Book ROom</option>
-                                <option value="5">Physical Plant Inventory</option>
+                                <option value="6">Book Room</option>
+                                <option value="7">Physical Plant Inventory Officer</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="row g-3 mt-2">
+                        <!-- Office Selection -->
+                        <div class="col-md-6">
+                            <label for="office_id" class="form-label">Office</label>
+                            <select class="form-control" id="office_id" name="office_id">
+                                <option value="">Select Office</option>
+                                @foreach ($offices as $office)
+                                    <option value="{{ $office->id }}">{{ $office->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Supervisor Selection -->
                         <div class="col-md-6" id="supervisorField">
                             <label for="supervisor_id" class="form-label">Assign Supervisor</label>
                             <select class="form-control" id="supervisor_id" name="supervisor_id">
@@ -119,6 +130,7 @@
                             </select>
                         </div>
 
+                        <!-- Administrator Selection -->
                         <div class="col-md-6" id="adminField">
                             <label for="administrator_id" class="form-label">Assign Administrator</label>
                             <select class="form-control" id="administrator_id" name="administrator_id">
@@ -155,7 +167,7 @@
         document.getElementById("middlename").value = user.middlename ?? ''; 
         document.getElementById("email").value = user.email;
         document.getElementById("role").value = user.role;
-
+        document.getElementById("office_id").value = user.office_id ?? '';
         document.getElementById("supervisor_id").value = user.supervisor_id ?? '';
         document.getElementById("administrator_id").value = user.administrator_id ?? '';
 
@@ -168,14 +180,15 @@
         document.getElementById('supervisorField').classList.toggle('d-none', role !== '0');
         document.getElementById('adminField').classList.toggle('d-none', role !== '0' && role !== '2');
     }
-    document.addEventListener('DOMContentLoaded', function () {
-    let editUserModal = document.getElementById('editUserModal');
 
-    editUserModal.addEventListener('hidden.bs.modal', function () {
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        document.body.classList.remove('modal-open');
+    document.addEventListener('DOMContentLoaded', function () {
+        let editUserModal = document.getElementById('editUserModal');
+
+        editUserModal.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+        });
     });
-});
 </script>
 
 <!-- ✅ Bootstrap JS -->

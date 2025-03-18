@@ -56,7 +56,7 @@
                     <option value="4">Comptroller</option>
                     <option value="5">IT Admin</option>
                     <option value="6">Book Room</option>
-                    <option value="5">Physical Plant Inventory</option>
+                    <option value="5">Physical Plant Inventory Officer</option>
                 </select>
             </div>
 

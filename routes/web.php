@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BookRoomController;
 use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\PurchasingOfficerController;
+use App\Http\Controllers\PhysicalPlantController;
 
 /*
 |--------------------------------------------------------------------------

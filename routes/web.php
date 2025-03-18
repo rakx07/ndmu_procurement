@@ -92,28 +92,29 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 // Staff Routes (Only Role 0 can access)
+
+// ✅ Staff Routes (Only Role 0 can access)
 Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
+
+    // Dashboard
     Route::get('/dashboard', [StaffController::class, 'dashboard'])->name('staff.dashboard');
 
-    // Procurement Request Management
-    Route::get('/request/create', [ProcurementRequestController::class, 'create'])->name('staff.requests.create');
-    Route::post('/request', [StaffController::class, 'store'])->name('staff.requests.store');
-    Route::get('/request/{id}/edit', [StaffController::class, 'edit'])->name('staff.requests.edit');
-    Route::put('/request/{id}', [StaffController::class, 'update'])->name('staff.requests.update');
+    // ✅ Procurement Request Management (Handled by ProcurementRequestController)
+    Route::get('/requests/create', [ProcurementRequestController::class, 'create'])->name('staff.requests.create');
+    Route::post('/requests/store', [ProcurementRequestController::class, 'store'])->name('staff.requests.store'); // ✅ FIXED
 
-    // Procurement Requests - Viewing and Storage
+    // ✅ Procurement Requests - Viewing
     Route::get('/requests', [ProcurementRequestController::class, 'index'])->name('staff.requests.index');
-    Route::post('/requests/store', [ProcurementRequestController::class, 'store'])->name('staff.requests.store');
     Route::get('/requests/{id}', [ProcurementRequestController::class, 'show'])->name('staff.requests.show');
 
-    // ✅ FIX: Removed extra "staff/" to avoid duplication
-    Route::get('/request/{id}/items', [ProcurementRequestController::class, 'getRequestItems'])->name('staff.requests.items');
+    // ✅ Get items for a specific request
+    Route::get('/requests/{id}/items', [ProcurementRequestController::class, 'getRequestItems'])->name('staff.requests.items');
+
+    // ✅ Allow Staff to edit their requests before approval
+    Route::get('/requests/{id}/edit', [ProcurementRequestController::class, 'edit'])->name('staff.requests.edit');
+    Route::put('/requests/{id}', [ProcurementRequestController::class, 'update'])->name('staff.requests.update');
 });
 
-// ✅ FIX: Allow all authenticated users to add items
-Route::middleware(['auth'])->group(function () {
-    Route::post('/staff/request/add-item', [ProcurementRequestController::class, 'addItem'])->name('staff.requests.addItem');
-});
 
 
 /*

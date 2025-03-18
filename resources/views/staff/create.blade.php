@@ -27,7 +27,7 @@
                         <input type="checkbox" id="needs_admin_approval" name="needs_admin_approval" value="1" onchange="updateApprovalFlow()">
                         <label for="needs_admin_approval" class="form-label fw-bold ms-2">Needs Administrator Approval?</label>
                     </div>
-                    
+
                     <!-- Hidden input to track approval levels -->
                     <input type="hidden" id="approval_flow" name="approval_flow" value="supervisor_comptroller_purchasing">
 
@@ -64,25 +64,33 @@
                     <table class="table table-striped">
                         <thead class="table-dark">
                             <tr>
-                                <th>Select</th>
                                 <th>Item Name</th>
                                 <th>Unit Price</th>
+                                <th>Supplier</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="item-table-body">
-                            @foreach($existingItems as $item)
+                            @if($existingItems->count() > 0)
+                                @foreach($existingItems as $item)
+                                    <tr id="available-item-{{ $item->id }}">
+                                        <td>{{ $item->item_name }}</td>
+                                        <td>{{ number_format($item->unit_price, 2) }}</td>
+                                        <td>{{ $item->supplier_name }}</td>
+                                        <td class="text-center">
+                                            <button class="btn btn-success btn-sm" 
+                                                    id="add-btn-{{ $item->id }}" 
+                                                    onclick="addItemToRequest({{ $item->id }}, '{{ $item->item_name }}', {{ $item->unit_price }})">
+                                                Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
                                 <tr>
-                                    <td class="text-center">
-                                        <input type="checkbox" 
-                                               value="{{ $item->id }}" 
-                                               data-item-name="{{ $item->item_name }}" 
-                                               data-price="{{ $item->unit_price }}" 
-                                               onclick="addItemToRequest(this)">
-                                    </td>
-                                    <td>{{ $item->item_name }}</td>
-                                    <td>{{ number_format($item->unit_price, 2) }}</td>
+                                    <td colspan="4" class="text-center text-danger">No available items found</td>
                                 </tr>
-                            @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -92,6 +100,23 @@
                     {{ $existingItems->links() }}
                 </div>
             </div>
+
+            <!-- ✅ Other Items Section (Manual Entry) -->
+            <div class="card shadow-sm p-4 mt-4">
+                <h4 class="mb-3">Other Items</h4>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" id="manualItemName" class="form-control" placeholder="Item Name">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" id="manualItemPrice" class="form-control" placeholder="Unit Price" min="0">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary" onclick="addManualItem()">Add Item</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -99,18 +124,41 @@
 <script>
     let selectedItems = {}; // Store selected items
 
-    function addItemToRequest(checkbox) {
-        const itemId = checkbox.value;
-        const itemName = checkbox.getAttribute('data-item-name');
-        const unitPrice = parseFloat(checkbox.getAttribute('data-price'));
-
-        if (checkbox.checked) {
+    function addItemToRequest(itemId, itemName, unitPrice) {
+        if (!selectedItems[itemId]) {
             selectedItems[itemId] = { item_name: itemName, unit_price: unitPrice, quantity: 1 };
             updateSelectedItemsTable();
-        } else {
-            delete selectedItems[itemId];
-            updateSelectedItemsTable();
+
+            // Disable Add Button
+            let addButton = document.getElementById(`add-btn-${itemId}`);
+            addButton.classList.remove("btn-success");
+            addButton.classList.add("btn-secondary");
+            addButton.disabled = true;
         }
+    }
+
+    function addManualItem() {
+        let itemName = document.getElementById('manualItemName').value.trim();
+        let unitPrice = parseFloat(document.getElementById('manualItemPrice').value);
+
+        if (itemName === "" || isNaN(unitPrice) || unitPrice < 0) {
+            alert("Please enter a valid item name and unit price.");
+            return;
+        }
+
+        let itemId = 'manual-' + itemName.replace(/\s+/g, '-').toLowerCase();
+
+        if (selectedItems[itemId]) {
+            alert("This item is already added.");
+            return;
+        }
+
+        selectedItems[itemId] = { item_name: itemName, unit_price: unitPrice, quantity: 1 };
+        updateSelectedItemsTable();
+
+        // Clear input fields
+        document.getElementById('manualItemName').value = "";
+        document.getElementById('manualItemPrice').value = "";
     }
 
     function updateSelectedItemsTable() {
@@ -121,21 +169,10 @@
             const item = selectedItems[itemId];
             const itemHtml = `
                 <tr id="selected-item-${itemId}">
-                    <td>
-                        <input type="hidden" name="items[${itemId}][item_name]" value="${item.item_name}">
-                        ${item.item_name}
-                    </td>
-                    <td>
-                        <input type="hidden" name="items[${itemId}][unit_price]" value="${item.unit_price}">
-                        ${item.unit_price.toFixed(2)}
-                    </td>
-                    <td>
-                        <input type="number" name="items[${itemId}][quantity]" class="form-control" required min="1" value="${item.quantity}"
-                            onchange="selectedItems['${itemId}'].quantity = this.value">
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedItem('${itemId}')">Remove</button>
-                    </td>
+                    <td>${item.item_name}</td>
+                    <td>${item.unit_price.toFixed(2)}</td>
+                    <td><input type="number" class="form-control" required min="1" value="${item.quantity}" onchange="selectedItems['${itemId}'].quantity = this.value"></td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedItem('${itemId}')">Remove</button></td>
                 </tr>
             `;
             container.insertAdjacentHTML('beforeend', itemHtml);
@@ -145,27 +182,6 @@
     function removeSelectedItem(itemId) {
         delete selectedItems[itemId];
         updateSelectedItemsTable();
-    }
-
-    function filterItems() {
-        let searchValue = document.getElementById("searchItem").value.toLowerCase();
-        let tableRows = document.querySelectorAll("#item-table-body tr");
-
-        tableRows.forEach(row => {
-            let itemName = row.cells[1].textContent.toLowerCase();
-            row.style.display = itemName.includes(searchValue) ? "" : "none";
-        });
-    }
-
-    function updateApprovalFlow() {
-        let needsAdminApproval = document.getElementById('needs_admin_approval').checked;
-        let approvalFlowInput = document.getElementById('approval_flow');
-
-        if (needsAdminApproval) {
-            approvalFlowInput.value = "supervisor_administrator_comptroller_purchasing";
-        } else {
-            approvalFlowInput.value = "supervisor_comptroller_purchasing";
-        }
     }
 </script>
 

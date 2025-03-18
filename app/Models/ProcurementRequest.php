@@ -12,6 +12,7 @@ class ProcurementRequest extends Model
     protected $fillable = [
         'requestor_id', 
         'office', 
+        'office_id', // ✅ FIXED: Added office_id to be saved in database
         'date_requested', 
         'status', 
         'remarks', 
@@ -25,7 +26,7 @@ class ProcurementRequest extends Model
 
     public function items()
     {
-        return $this->hasMany(ProcurementItem::class, 'request_id');
+        return $this->hasMany(ProcurementRequestItem::class, 'procurement_request_id'); // ✅ FIXED: Corrected relationship
     }
 
     public function approvals()
@@ -43,6 +44,11 @@ class ProcurementRequest extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function office()
+    {
+        return $this->belongsTo(Office::class, 'office_id');
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -57,9 +63,4 @@ class ProcurementRequest extends Model
     {
         return $query->where('requestor_id', $userId);
     }
-    public function office()
-{
-    return $this->belongsTo(Office::class, 'office_id');
-}
-
 }

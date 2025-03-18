@@ -18,7 +18,8 @@ return new class extends Migration {
     {
         Schema::table('procurement_items', function (Blueprint $table) {
             if (Schema::hasColumn('procurement_items', 'office_id')) {
-                $table->dropColumn('office_id');
+                $table->dropForeign(['office_id']);
+$table->dropColumn('office_id');
             }
         });
     }

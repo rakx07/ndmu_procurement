@@ -11,6 +11,17 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+     // Define role constants
+     const ROLE_STAFF = 0;
+     const ROLE_PURCHASING_OFFICER = 1;
+     const ROLE_SUPERVISOR = 2;
+     const ROLE_ADMINISTRATOR = 3;
+     const ROLE_COMPTROLLER = 4;
+     const ROLE_IT_ADMIN = 5;
+     const ROLE_BOOK_ROOM = 6;
+     const ROLE_PHYSICAL_PLANT_INVENTORY_OFFICER = 7;
+
+     
     protected $fillable = [
         'employee_id',
         'lastname',
@@ -51,14 +62,17 @@ class User extends Authenticatable
     public function isRole($role)
     {
         $roles = [
-            'staff' => 0,
-            'purchasing_officer' => 1,
-            'supervisor' => 2,
-            'admin' => 3,
-            'comptroller' => 4,
-            'it_admin' => 5,
+            'staff' => self::ROLE_STAFF,
+            'purchasing_officer' => self::ROLE_PURCHASING_OFFICER,
+            'supervisor' => self::ROLE_SUPERVISOR,
+            'admin' => self::ROLE_ADMINISTRATOR,
+            'comptroller' => self::ROLE_COMPTROLLER,
+            'it_admin' => self::ROLE_IT_ADMIN,
+            'book_room' => self::ROLE_BOOK_ROOM,
+            'physical_plant_inventory_officer' => self::ROLE_PHYSICAL_PLANT_INVENTORY_OFFICER,
         ];
-        return $this->role === $roles[$role];
+
+        return isset($roles[$role]) && $this->role === $roles[$role];
     }
 
     /**
@@ -147,14 +161,14 @@ class User extends Authenticatable
     public function roleText()
     {
         $roles = [
-            0 => 'Staff',
-            1 => 'Purchasing Officer',
-            2 => 'Supervisor',
-            3 => 'Administrator',
-            4 => 'Comptroller',
-            5 => 'IT Admin',
-            6 => 'Book Room',
-            7 => 'Physical Plant Inventory Officer',
+            self::ROLE_STAFF => 'Staff',
+            self::ROLE_PURCHASING_OFFICER => 'Purchasing Officer',
+            self::ROLE_SUPERVISOR => 'Supervisor',
+            self::ROLE_ADMINISTRATOR => 'Administrator',
+            self::ROLE_COMPTROLLER => 'Comptroller',
+            self::ROLE_IT_ADMIN => 'IT Admin',
+            self::ROLE_BOOK_ROOM => 'Book Room',
+            self::ROLE_PHYSICAL_PLANT_INVENTORY_OFFICER => 'Physical Plant Inventory Officer',
         ];
 
         return $roles[$this->role] ?? 'Unknown';
@@ -173,4 +187,6 @@ class User extends Authenticatable
 {
     return $this->firstname . ' ' . $this->lastname;
 }
+//Added Constant
+
 }

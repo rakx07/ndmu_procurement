@@ -58,28 +58,30 @@ class AdminController extends Controller
      * Approve a Procurement Request as an Administrator.
      */
     public function approve($id)
-    {
-        $user = Auth::user();
-        $procurementRequest = ProcurementRequest::findOrFail($id);
+{
+    $user = Auth::user();
+    $procurementRequest = ProcurementRequest::findOrFail($id);
 
-        if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
-            return redirect()->route('admin.dashboard')->with('error', 'Only valid supervisor-approved requests can be processed.');
-        }
-
-        $procurementRequest->update([
-            'status' => 'admin_approved',
-            'needs_admin_approval' => false,
-            'approved_by' => $user->id
-        ]);
-
-        Approval::create([
-            'request_id' => $procurementRequest->id,
-            'approver_id' => $user->id,
-            'role' => 3, // ✅ Correct - Integer value
-            'status' => 'admin_approved',
-        ]);
-        return redirect()->route('admin.dashboard')->with('success', 'Request approved successfully.');
+    if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
+        return redirect()->route('admin.dashboard')->with('error', 'Only valid supervisor-approved requests can be processed.');
     }
+
+    $procurementRequest->update([
+        'status' => 'admin_approved',
+        'needs_admin_approval' => false,
+        'approved_by' => $user->id
+    ]);
+
+    Approval::create([
+        'request_id' => $procurementRequest->id,
+        'approver_id' => $user->id,
+        'role' => $user->role, // ✅ Store actual admin role dynamically
+        'status' => 'admin_approved',
+    ]);
+
+    return redirect()->route('admin.dashboard')->with('success', 'Request approved successfully.');
+}
+
 
     /**
      * Reject a Procurement Request as an Administrator.

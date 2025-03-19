@@ -131,8 +131,7 @@ Route::middleware(['auth', 'role:2'])->group(function () {
     Route::post('/supervisor/approve/{id}', [SupervisorController::class, 'approve'])->name('supervisor.approve');
     Route::post('/supervisor/reject/{id}', [SupervisorController::class, 'reject'])->name('supervisor.reject');
     Route::get('/supervisor/request/{id}/items', [SupervisorController::class, 'getRequestItems']);
-    Route::get('/supervisor/approved-requests', [SupervisorController::class, 'approvedRequests'])
-    ->name('supervisor.approved_requests');
+    Route::get('/supervisor/approved-requests', [SupervisorController::class, 'approvedRequests'])->name('supervisor.approved_requests');
     Route::get('/supervisor/approved-request/{id}/items', [SupervisorController::class, 'getApprovedRequestItems']);
     Route::get('/supervisor/rejected-requests', [SupervisorController::class, 'rejectedRequests'])->name('supervisor.rejected_requests');
     Route::get('/supervisor/rejected-requests/{id}/items', [SupervisorController::class, 'getRejectedRequestItems'])->name('supervisor.rejected_requests.items');
@@ -159,14 +158,11 @@ Route::middleware(['auth', 'role:5'])->group(function () {
 | Approval Routes (Role: 2 - Supervisor, 3 - Admin, 4 - Comptroller)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth'])->group(function () {
-    Route::middleware(['role:2', 'role:3', 'role:4'])->group(function () {
-        Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
-        Route::post('approvals/{id}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
-        Route::post('approvals/{id}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
-    });
+Route::middleware(['auth', 'role:2,3,4'])->group(function () {
+    Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+    Route::post('approvals/{id}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
+    Route::post('approvals/{id}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
 });
-
 /*
 |--------------------------------------------------------------------------
 | Purchase Routes (Role: 1 - Purchasing Officer)

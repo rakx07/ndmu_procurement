@@ -43,32 +43,26 @@ class ProcurementRequestController extends Controller
      */
     public function store(Request $request)
 {
-    \Log::info('Store method triggered:', $request->all()); // Debugging Log
-
     $request->validate([
         'office' => 'required|string',
         'date_requested' => 'required|date',
+        'needs_admin_approval' => 'nullable|boolean', // Allow checkbox value
         'items' => 'required|array',
         'items.*.item_name' => 'required|string',
         'items.*.quantity' => 'required|integer|min:1',
         'items.*.unit_price' => 'nullable|numeric|min:0',
     ]);
 
-    \Log::info('Received items:', ['items' => $request->items]); // Log Items for Debugging
-
-    if (!is_array($request->items) || empty($request->items)) {
-        return redirect()->back()->with('error', 'No items were selected.');
-    }
-
     $user = Auth::user();
 
     DB::transaction(function () use ($user, $request) {
         $procurementRequest = ProcurementRequest::create([
             'requestor_id' => $user->id,
-            'office_id' => $user->office_id, // Ensure this field exists
+            'office_id' => $user->office_id,
             'office' => $request->office,
             'date_requested' => $request->date_requested,
             'status' => 'pending',
+            'needs_admin_approval' => $request->has('needs_admin_approval'), // Capture checkbox
         ]);
 
         foreach ($request->items as $item) {
@@ -91,45 +85,44 @@ class ProcurementRequestController extends Controller
      * Approve a procurement request based on user role.
      */
     public function approve($id)
-    {
-        $user = Auth::user();
-        $procurementRequest = ProcurementRequest::findOrFail($id);
+{
+    $user = Auth::user();
+    $procurementRequest = ProcurementRequest::findOrFail($id);
 
-        $currentStatus = $procurementRequest->status;
-        $approvalFlow = $procurementRequest->approval_flow;
+    $currentStatus = $procurementRequest->status;
 
-        $statusFlow = [
-            'pending' => ['role' => 2, 'next_status' => 'supervisor_approved'],
-            'supervisor_approved' => ['role' => 3, 'next_status' => 'admin_approved'],
-            'admin_approved' => ['role' => 4, 'next_status' => 'comptroller_approved'],
-            'comptroller_approved' => ['role' => 1, 'next_status' => 'ready_for_purchase'],
-        ];
+    $statusFlow = [
+        'pending' => ['role' => 2, 'next_status' => 'supervisor_approved'],
+        'supervisor_approved' => [
+            'role' => 3, 
+            'next_status' => $procurementRequest->needs_admin_approval ? 'admin_approved' : 'comptroller_approved'
+        ],
+        'admin_approved' => ['role' => 4, 'next_status' => 'comptroller_approved'],
+        'comptroller_approved' => ['role' => 1, 'next_status' => 'ready_for_purchase'],
+    ];
 
-        if (!isset($statusFlow[$currentStatus]) || $statusFlow[$currentStatus]['role'] !== $user->role) {
-            return redirect()->back()->with('error', 'You are not authorized to approve this request.');
-        }
-
-        $nextStatus = $statusFlow[$currentStatus]['next_status'];
-
-        if ($approvalFlow === 'supervisor_comptroller_purchasing' && $currentStatus === 'supervisor_approved') {
-            $nextStatus = 'comptroller_approved';
-        }
-
-        $procurementRequest->update([
-            'status' => $nextStatus,
-            'approved_by' => $user->id,
-        ]);
-
-        Approval::create([
-            'request_id' => $procurementRequest->id,
-            'approver_id' => $user->id,
-            'role' => $user->role,
-            'status' => 'approved',
-            'remarks' => 'Approved by ' . $user->firstname . ' ' . $user->lastname,
-        ]);
-
-        return redirect()->back()->with('success', 'Request approved successfully.');
+    if (!isset($statusFlow[$currentStatus]) || $statusFlow[$currentStatus]['role'] !== $user->role) {
+        return redirect()->back()->with('error', 'You are not authorized to approve this request.');
     }
+
+    $nextStatus = $statusFlow[$currentStatus]['next_status'];
+
+    $procurementRequest->update([
+        'status' => $nextStatus,
+        'approved_by' => $user->id,
+    ]);
+
+    Approval::create([
+        'request_id' => $procurementRequest->id,
+        'approver_id' => $user->id,
+        'role' => $user->role,
+        'status' => 'approved',
+        'remarks' => 'Approved by ' . $user->firstname . ' ' . $user->lastname,
+    ]);
+
+    return redirect()->back()->with('success', 'Request approved successfully.');
+}
+
 
     /**
      * Reject a procurement request.

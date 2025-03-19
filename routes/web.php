@@ -18,6 +18,7 @@ use App\Http\Controllers\BookRoomController;
 use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\PurchasingOfficerController;
 use App\Http\Controllers\PhysicalPlantController;
+use App\Http\Controllers\ComptrollerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -249,8 +250,25 @@ Route::middleware(['auth', 'role:7'])->group(function () {
 |--------------------------------------------------------------------------
 | Approval Controller Routes
 |--------------------------------------------------------------------------
-*/Route::middleware(['auth'])->group(function () {
+*/
+Route::middleware(['auth'])->group(function () {
     Route::post('/request/{id}/approve', [ApprovalController::class, 'approve'])->name('approval.approve');
     Route::post('/request/{id}/reject', [ApprovalController::class, 'reject'])->name('approval.reject');
     Route::get('/request/{id}/approvals', [ApprovalController::class, 'showRequestApprovals'])->name('approval.history');
+});
+/*
+|--------------------------------------------------------------------------
+| Comptroller Routes (Role: 4) - Comptroller Users Only
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:4'])->group(function () {
+    Route::get('/comptroller/dashboard', [ComptrollerController::class, 'dashboard'])->name('comptroller.dashboard');
+    Route::get('/comptroller/pending-approvals', [ComptrollerController::class, 'pendingApprovals'])->name('comptroller.pending_approvals');
+    
+    Route::get('/comptroller/approved-requests', [ComptrollerController::class, 'approvedRequests'])->name('comptroller.approved_requests');
+    Route::get('/comptroller/rejected-requests', [ComptrollerController::class, 'rejectedRequests'])->name('comptroller.rejected_requests');
+
+    Route::get('/comptroller/request/{id}', [ComptrollerController::class, 'show'])->name('comptroller.show');
+    Route::patch('/comptroller/approve/{id}', [ComptrollerController::class, 'approve'])->name('comptroller.approve');
+    Route::patch('/comptroller/reject/{id}', [ComptrollerController::class, 'reject'])->name('comptroller.reject');
 });

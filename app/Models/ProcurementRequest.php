@@ -28,6 +28,7 @@ class ProcurementRequest extends Model
     {
         return $this->belongsTo(User::class, 'requestor_id');
     }
+    
 
     /**
      * Relationship: Items in the procurement request

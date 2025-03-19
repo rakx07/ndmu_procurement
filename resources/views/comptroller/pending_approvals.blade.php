@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="bg-white p-6 rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold mb-4">Procurement Requests Pending Comptroller Approval</h1>
+    <h1 class="text-2xl font-bold mb-4">Pending Procurement Requests for Comptroller Approval</h1>
 
     @if(session('success'))
         <div class="bg-green-200 text-green-800 p-3 rounded mb-4">
@@ -21,7 +21,7 @@
             <tr class="bg-gray-800 text-white">
                 <th class="px-4 py-2 border">#</th>
                 <th class="px-4 py-2 border">Request ID</th>
-                <th class="px-4 py-2 border">Requested By</th>
+                <th class="px-4 py-2 border">Requested By</th> <!-- ✅ Show Requestor -->
                 <th class="px-4 py-2 border">Department</th>
                 <th class="px-4 py-2 border">Item Description</th>
                 <th class="px-4 py-2 border">Status</th>
@@ -33,7 +33,8 @@
                 <tr class="border">
                     <td class="px-4 py-2 border">{{ $key + 1 }}</td>
                     <td class="px-4 py-2 border">{{ $request->id }}</td>
-                    <td class="px-4 py-2 border">{{ $request->requestor->name ?? 'N/A' }}</td>
+                    <td class="px-4 py-2 border"> {{ optional($request->requestor)->full_name ?? 'No Requestor' }}
+                    </td>
                     <td class="px-4 py-2 border">{{ $request->office }}</td>
                     <td class="px-4 py-2 border">{{ $request->item_description ?? 'N/A' }}</td>
                     <td class="px-4 py-2 border text-yellow-500 font-bold">Pending</td>

@@ -36,4 +36,28 @@ class Approval extends Model
     {
         return $this->hasOneThrough(User::class, ProcurementRequest::class, 'id', 'id', 'request_id', 'requestor_id');
     }
+
+    /**
+     * Scope to filter approvals by status.
+     */
+    public function scopeStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    /**
+     * Scope to get approvals for a specific request.
+     */
+    public function scopeForRequest($query, $requestId)
+    {
+        return $query->where('request_id', $requestId);
+    }
+
+    /**
+     * Scope to get approvals by role.
+     */
+    public function scopeByRole($query, $role)
+    {
+        return $query->where('role', $role);
+    }
 }

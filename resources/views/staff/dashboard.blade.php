@@ -3,53 +3,50 @@
 @section('content')
 <div class="container-fluid mt-4">
     <div class="row">
-        <!-- Left Side: Dashboard Summary -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm p-4">
-                <h2 class="text-2xl font-semibold mb-4">Dashboard Overview</h2>
-
-                <div class="mb-3">
-                    <h4 class="text-lg font-semibold">Total Requests</h4>
-                    <p class="text-xl font-bold">{{ $requests->count() }}</p>
-                </div>
-
-                <div class="mb-3">
-                    <h4 class="text-lg font-semibold">Pending Requests</h4>
-                    <p class="text-xl font-bold text-warning">{{ $requests->where('status', 'pending')->count() }}</p>
-                </div>
-
-                <div class="mb-3">
-                    <h4 class="text-lg font-semibold">Approved Requests</h4>
-                    <p class="text-xl font-bold text-success">{{ $requests->where('status', 'approved')->count() }}</p>
-                </div>
-
-                <div class="mb-3">
-                    <h4 class="text-lg font-semibold">Rejected Requests</h4>
-                    <p class="text-xl font-bold text-danger">{{ $requests->where('status', 'rejected')->count() }}</p>
-                </div>
+        <!-- Summary Boxes -->
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm">
+                <h6 class="text-muted">Total Requests</h6>
+                <h3 class="font-weight-bold">{{ $requests->count() }}</h3>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm">
+                <h6 class="text-muted">Pending Requests</h6>
+                <h3 class="font-weight-bold text-warning">{{ $requests->where('status', 'pending')->count() }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm">
+                <h6 class="text-muted">Approved Requests</h6>
+                <h3 class="font-weight-bold text-success">{{ $requests->where('status', 'approved')->count() }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-4 shadow-sm">
+                <h6 class="text-muted">Rejected Requests</h6>
+                <h3 class="font-weight-bold text-danger">{{ $requests->where('status', 'rejected')->count() }}</h3>
+            </div>
+        </div>
+    </div>
 
-        <!-- Right Side: Procurement Requests Table -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm p-4">
-                <h4 class="mb-3">Your Procurement Requests</h4>
-
-                @if(session('success'))
-                    <div class="alert alert-success" role="alert">
-                        {{ session('success') }}
-                    </div>
-                @endif
+    <!-- Procurement Requests Table -->
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card p-4 shadow-sm">
+                <h5 class="mb-3">Recent Procurement Requests</h5>
 
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-bordered">
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Requestor</th>
                                 <th>Office</th>
+                                <th>Date Requested</th>
                                 <th>Status</th>
-                                <th>Total Items</th>
+                                <th>Approved By</th>
+                                <th>Remarks</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -57,21 +54,23 @@
                             @forelse($requests as $request)
                                 <tr>
                                     <td>{{ $request->id }}</td>
-                                    <td>{{ auth()->user()->firstname . ' ' . auth()->user()->lastname }}</td>
+                                    <td>{{ $request->requestor->firstname . ' ' . $request->requestor->lastname }}</td>
                                     <td>{{ $request->office }}</td>
+                                    <td>{{ $request->created_at->format('M d, Y') }}</td>
                                     <td>
                                         <span class="badge bg-{{ $request->status == 'approved' ? 'success' : ($request->status == 'rejected' ? 'danger' : 'warning') }}">
                                             {{ ucfirst($request->status) }}
                                         </span>
                                     </td>
-                                    <td>{{ $request->items->count() }} items</td>
+                                    <td>{{ $request->approved_by ?? 'N/A' }}</td>
+                                    <td>{{ $request->remarks ?? 'No remarks' }}</td>
                                     <td>
                                         <button onclick="viewItems({{ $request->id }})" class="btn btn-primary btn-sm">View</button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted">No procurement requests found.</td>
+                                    <td colspan="8" class="text-center text-muted">No procurement requests found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -82,34 +81,6 @@
                 <div class="mt-3">
                     {{ $requests->links() }}
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ✅ View Modal -->
-<div id="viewModal" class="modal fade" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Procurement Request Items</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Item Name</th>
-                            <th>Quantity</th>
-                            <th>Unit Price</th>
-                            <th>Total Price</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modal-items-container"></tbody>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -144,4 +115,5 @@ function viewItems(requestId) {
         .catch(error => console.error('Error fetching items:', error));
 }
 </script>
+
 @endsection

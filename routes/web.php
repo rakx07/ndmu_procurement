@@ -248,3 +248,13 @@ Route::middleware(['auth', 'role:6'])->group(function () {
 Route::middleware(['auth', 'role:7'])->group(function () {
     Route::get('/ppi/dashboard', [PhysicalPlantController::class, 'dashboard'])->name('ppi.dashboard');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Approval Controller Routes
+|--------------------------------------------------------------------------
+*/Route::middleware(['auth'])->group(function () {
+    Route::post('/request/{id}/approve', [ApprovalController::class, 'approve'])->name('approval.approve');
+    Route::post('/request/{id}/reject', [ApprovalController::class, 'reject'])->name('approval.reject');
+    Route::get('/request/{id}/approvals', [ApprovalController::class, 'showRequestApprovals'])->name('approval.history');
+});

@@ -75,10 +75,9 @@ class AdminController extends Controller
         Approval::create([
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
-            'role' => 'Administrator',
+            'role' => 3, // ✅ Correct - Integer value
             'status' => 'admin_approved',
         ]);
-
         return redirect()->route('admin.dashboard')->with('success', 'Request approved successfully.');
     }
 
@@ -107,7 +106,7 @@ class AdminController extends Controller
         Approval::create([
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
-            'role' => 'Administrator',
+            'role' => 3, // ✅ Store role ID instead of 'Administrator'
             'status' => 'rejected',
             'remarks' => $request->input('remarks'),
         ]);

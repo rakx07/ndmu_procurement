@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProcurementRequest;
 use App\Models\Approval;
+use App\Models\RequestApprovalHistory; // ✅ Add this import
 use App\Models\User;
 
 class AdminController extends Controller
@@ -62,63 +63,48 @@ class AdminController extends Controller
     $user = Auth::user();
     $procurementRequest = ProcurementRequest::findOrFail($id);
 
-    if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
-        return redirect()->route('admin.dashboard')->with('error', 'Only valid supervisor-approved requests can be processed.');
-    }
+    $procurementRequest->update(['status' => 'admin_approved', 'approved_by' => $user->id]);
 
-    $procurementRequest->update([
-        'status' => 'admin_approved',
-        'needs_admin_approval' => false,
-        'approved_by' => $user->id
-    ]);
-
-    Approval::create([
+    // ✅ Store approval history
+    RequestApprovalHistory::create([
         'request_id' => $procurementRequest->id,
         'approver_id' => $user->id,
-        'role' => $user->role, // ✅ Store actual admin role dynamically
-        'status' => 'admin_approved',
+        'role' => 3, // Administrator role
+        'status' => 'approved',
     ]);
 
-    return redirect()->route('admin.dashboard')->with('success', 'Request approved successfully.');
+    return redirect()->route('admin.dashboard')->with('success', 'Request approved.');
 }
-
 
     /**
      * Reject a Procurement Request as an Administrator.
      */
     public function reject(Request $request, $id)
-    {
-        $user = Auth::user();
-        $procurementRequest = ProcurementRequest::findOrFail($id);
+{
+    $user = Auth::user();
+    $procurementRequest = ProcurementRequest::findOrFail($id);
+    $remarks = strip_tags($request->input('remarks'));
 
-        if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
-            return redirect()->route('admin.dashboard')->with('error', 'Only valid supervisor-approved requests can be rejected.');
-        }
+    $procurementRequest->update(['status' => 'rejected', 'remarks' => $remarks]);
 
-        $request->validate([
-            'remarks' => 'required|string|max:255',
-        ]);
+    // ✅ Store rejection history
+    RequestApprovalHistory::create([
+        'request_id' => $procurementRequest->id,
+        'approver_id' => $user->id,
+        'role' => 3, // Administrator role
+        'status' => 'rejected',
+        'remarks' => $remarks,
+    ]);
 
-        $procurementRequest->update([
-            'status' => 'rejected',
-            'needs_admin_approval' => false,
-            'remarks' => $request->input('remarks'),
-        ]);
+    return redirect()->route('admin.dashboard')->with('success', 'Request rejected.');
+}
 
-        Approval::create([
-            'request_id' => $procurementRequest->id,
-            'approver_id' => $user->id,
-            'role' => 3, // ✅ Store role ID instead of 'Administrator'
-            'status' => 'rejected',
-            'remarks' => $request->input('remarks'),
-        ]);
 
-        return redirect()->route('admin.dashboard')->with('success', 'Request rejected successfully.');
-    }
     public function pendingRequests()
 {
     $pendingRequests = ProcurementRequest::where('status', 'supervisor_approved')
                         ->where('needs_admin_approval', true)
+                        ->with('user') // ✅ Eager load the user
                         ->get();
 
     return view('admin.pending_requests', compact('pendingRequests'));

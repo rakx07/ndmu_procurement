@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ProcurementRequest;
 use App\Models\Approval;
+use App\Models\RequestApprovalHistory; // ✅ Add this import
+use Illuminate\Support\Facades\Auth;
+
 
 class ComptrollerController extends Controller
 {
@@ -59,35 +62,21 @@ class ComptrollerController extends Controller
      */
     public function approve($id)
 {
-    $request = ProcurementRequest::findOrFail($id);
-    
-    // Ensure the request is actually pending for Comptroller approval
-    if (!in_array($request->status, ['admin_approved', 'supervisor_approved']) || $request->comptroller_approved == 1) {
-        return redirect()->back()->with('error', 'This request is not eligible for Comptroller approval.');
-    }
+    $user = Auth::user();
+    $procurementRequest = ProcurementRequest::findOrFail($id);
 
-    // Update the procurement request as approved by the Comptroller
-    $request->comptroller_approved = 1;
-    $request->status = 'comptroller_approved'; // Updating status for tracking
-    $request->approved_by = auth()->user()->id;
-    $request->save();
+    $procurementRequest->update(['status' => 'comptroller_approved', 'approved_by' => $user->id]);
 
-    // Insert or update the approval entry in the approvals table
-    Approval::updateOrCreate(
-        [
-            'request_id' => $id, 
-            'approver_id' => auth()->id(), 
-            'role' => 4 // Role 4 = Comptroller
-        ],
-        [
-            'status' => 'comptroller_approved', 
-            'updated_at' => now()
-        ]
-    );
+    // ✅ Store approval history
+    RequestApprovalHistory::create([
+        'request_id' => $procurementRequest->id,
+        'approver_id' => $user->id,
+        'role' => 4, // Comptroller role
+        'status' => 'approved',
+    ]);
 
-    return redirect()->route('comptroller.pending_approvals')->with('success', 'Request approved successfully.');
+    return redirect()->route('comptroller.dashboard')->with('success', 'Request approved.');
 }
-
 
     /**
      * Reject a procurement request with remarks.

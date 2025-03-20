@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Approval;
+use App\Models\RequestApprovalHistory; // ✅ Fixed import
 use App\Models\ProcurementRequest;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,8 +28,10 @@ class ApprovalController extends Controller
             return redirect()->back()->with('error', 'Unauthorized approval.');
         }
 
-        // Check if this user has already approved the request
-        $existingApproval = Approval::where('request_id', $requestId)
+        $procurementRequest = ProcurementRequest::findOrFail($requestId);
+
+        // ✅ Prevent duplicate approvals
+        $existingApproval = RequestApprovalHistory::where('request_id', $requestId)
             ->where('approver_id', $user->id)
             ->where('role', $role)
             ->exists();
@@ -38,13 +40,21 @@ class ApprovalController extends Controller
             return redirect()->back()->with('error', 'You have already approved this request.');
         }
 
-        // Create a new approval record
-        Approval::create([
+        // ✅ Update Procurement Request
+        $procurementRequest->update([
+            'status' => $statusMap[$role],
+            'approved_by' => $user->id
+        ]);
+
+        // ✅ Create Approval History
+        RequestApprovalHistory::create([
             'request_id' => $requestId,
             'approver_id' => $user->id,
             'role' => $role,
-            'status' => $statusMap[$role],
-            'remarks' => $request->input('remarks') ?? null,
+            'status' => 'approved',
+            'remarks' => $request->input('remarks') ?? 'No remarks provided',
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
         return redirect()->back()->with('success', 'Request approved successfully.');
@@ -56,27 +66,37 @@ class ApprovalController extends Controller
     public function reject(Request $request, $requestId)
     {
         $user = Auth::user();
+        $procurementRequest = ProcurementRequest::findOrFail($requestId);
+        $remarks = $request->input('remarks') ?? 'No remarks provided';
 
-        Approval::create([
+        // ✅ Prevent duplicate rejections
+        $existingRejection = RequestApprovalHistory::where('request_id', $requestId)
+            ->where('approver_id', $user->id)
+            ->where('role', $user->role)
+            ->where('status', 'rejected')
+            ->exists();
+
+        if ($existingRejection) {
+            return redirect()->back()->with('error', 'You have already rejected this request.');
+        }
+
+        // ✅ Update Procurement Request
+        $procurementRequest->update([
+            'status' => 'rejected',
+            'remarks' => $remarks,
+        ]);
+
+        // ✅ Create Rejection History
+        RequestApprovalHistory::create([
             'request_id' => $requestId,
             'approver_id' => $user->id,
             'role' => $user->role,
             'status' => 'rejected',
-            'remarks' => $request->input('remarks') ?? 'No remarks provided',
+            'remarks' => $remarks,
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
         return redirect()->back()->with('error', 'Request has been rejected.');
-    }
-
-    /**
-     * Display approval history for a request.
-     */
-    public function showRequestApprovals($requestId)
-    {
-        $approvals = Approval::where('request_id', $requestId)
-                ->orderBy('created_at', 'asc')
-                ->get();
-
-        return view('procurement.request_approvals', compact('approvals'));
     }
 }

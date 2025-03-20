@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\ProcurementRequest;
 use App\Models\Approval;
 use App\Models\User;
+use App\Models\RequestApprovalHistory; // ✅ Add this import
 
 class SupervisorController extends Controller
 {
@@ -33,7 +34,7 @@ class SupervisorController extends Controller
     {
         $procurementRequest = ProcurementRequest::findOrFail($id);
 
-        // Ensure Supervisor can only view requests from their Staff
+        // Ensure Supervisor can only view requests from their assigned Staff
         if ($procurementRequest->requestor->supervisor_id !== Auth::id()) {
             return redirect()->route('supervisor.dashboard')->with('error', 'Unauthorized to view this request.');
         }
@@ -56,7 +57,7 @@ class SupervisorController extends Controller
 
         // Move status to next stage
         $procurementRequest->update([
-            'status' => 'supervisor_approved', // Correct ENUM value
+            'status' => 'supervisor_approved',
             'approved_by' => $user->id
         ]);
 
@@ -64,8 +65,19 @@ class SupervisorController extends Controller
         Approval::create([
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
-            'role' => $user->role, // ✅ Use role ID instead of string
+            'role' => $user->role, // ✅ Use role ID
             'status' => 'supervisor_approved',
+        ]);
+
+        // Store approval history
+        RequestApprovalHistory::create([
+            'request_id' => $procurementRequest->id,
+            'approver_id' => $user->id,
+            'role' => 2, // Supervisor role
+            'status' => 'approved',
+            'remarks' => 'Approved by Supervisor',
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
         return redirect()->route('supervisor.dashboard')->with('success', 'Request approved successfully.');
@@ -95,13 +107,28 @@ class SupervisorController extends Controller
         Approval::create([
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
-            'role' => $user->role, // ✅ Use role ID instead of string
+            'role' => $user->role, // ✅ Use role ID
             'status' => 'rejected',
             'remarks' => $remarks,
         ]);
 
+        // Store rejection history
+        RequestApprovalHistory::create([
+            'request_id' => $procurementRequest->id,
+            'approver_id' => $user->id,
+            'role' => 2, // Supervisor role
+            'status' => 'rejected',
+            'remarks' => $remarks,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
         return redirect()->route('supervisor.dashboard')->with('success', 'Request rejected successfully.');
     }
+
+    /**
+     * Fetch items of a Procurement Request.
+     */
     public function getRequestItems($id)
     {
         $user = Auth::user();
@@ -114,52 +141,66 @@ class SupervisorController extends Controller
 
         return response()->json($procurementRequest->items);
     }
+
+    /**
+     * List all approved requests by the Supervisor.
+     */
     public function approvedRequests()
-        {
-            $user = Auth::user();
+    {
+        $user = Auth::user();
 
-            // Fetch requests approved by this supervisor
-            $approvedRequests = Approval::where('approver_id', $user->id)
-                ->where('status', 'supervisor_approved')
-                ->with(['requestor']) // Ensure requestor relationship is loaded
-                ->get();
+        // Fetch requests approved by this supervisor
+        $approvedRequests = Approval::where('approver_id', $user->id)
+            ->where('status', 'supervisor_approved')
+            ->with(['requestor']) // Ensure requestor relationship is loaded
+            ->get();
 
-            return view('supervisor.approved_list_requests', compact('approvedRequests')); // ✅ Update View Name
-        }
-    public function getApprovedRequestItems($id)
-        {
-            $user = Auth::user();
-            $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
-
-            // Ensure the Supervisor can only view their assigned staff's requests
-            if ($procurementRequest->approved_by !== $user->id) {
-                return response()->json(['error' => 'Unauthorized access'], 403);
-            }
-
-            return response()->json($procurementRequest->items);
-        }
-        public function rejectedRequests()
-{
-    $user = Auth::user();
-    $requests = ProcurementRequest::where('status', 'rejected')
-                ->where('office_id', $user->office_id)
-                ->latest()
-                ->paginate(10);
-
-    return view('supervisor.rejected_requests', compact('requests'));
-}
-public function getRejectedRequestItems($id)
-{
-    $user = Auth::user();
-    $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
-
-    // Ensure the Supervisor can only view items of rejected requests in their office
-    if ($procurementRequest->status !== 'rejected' || $procurementRequest->office_id !== $user->office_id) {
-        return response()->json(['error' => 'Unauthorized access'], 403);
+        return view('supervisor.approved_list_requests', compact('approvedRequests'));
     }
 
-    return response()->json($procurementRequest->items);
-}
+    /**
+     * Fetch items of an approved Procurement Request.
+     */
+    public function getApprovedRequestItems($id)
+    {
+        $user = Auth::user();
+        $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
 
+        // Ensure the Supervisor can only view their assigned staff's approved requests
+        if ($procurementRequest->approved_by !== $user->id) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
 
+        return response()->json($procurementRequest->items);
+    }
+
+    /**
+     * List all rejected requests by the Supervisor.
+     */
+    public function rejectedRequests()
+    {
+        $user = Auth::user();
+        $requests = ProcurementRequest::where('status', 'rejected')
+            ->where('office_id', $user->office_id)
+            ->latest()
+            ->paginate(10);
+
+        return view('supervisor.rejected_requests', compact('requests'));
+    }
+
+    /**
+     * Fetch items of a rejected Procurement Request.
+     */
+    public function getRejectedRequestItems($id)
+    {
+        $user = Auth::user();
+        $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
+
+        // Ensure the Supervisor can only view items of rejected requests in their office
+        if ($procurementRequest->status !== 'rejected' || $procurementRequest->office_id !== $user->office_id) {
+            return response()->json(['error' => 'Unauthorized access'], 403);
+        }
+
+        return response()->json($procurementRequest->items);
+    }
 }

@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProcurementRequest;
-use App\Models\Approval;
-use App\Models\RequestApprovalHistory; // ✅ Add this import
+use App\Models\RequestApprovalHistory;
 use App\Models\User;
 
 class AdminController extends Controller
@@ -18,6 +17,7 @@ class AdminController extends Controller
     {
         $pendingRequests = ProcurementRequest::where('status', 'supervisor_approved')
                             ->where('needs_admin_approval', true)
+                            ->with('requestor') // ✅ Load requestor relationship
                             ->get();
 
         return view('admin.dashboard', compact('pendingRequests'));
@@ -42,70 +42,57 @@ class AdminController extends Controller
     }
 
     /**
-     * Show details of a specific Procurement Request.
-     */
-    public function show($id)
-    {
-        $procurementRequest = ProcurementRequest::findOrFail($id);
-
-        if ($procurementRequest->status !== 'supervisor_approved' || !$procurementRequest->needs_admin_approval) {
-            return redirect()->route('admin.dashboard')->with('error', 'Unauthorized to view this request.');
-        }
-
-        return view('admin.show_request', compact('procurementRequest'));
-    }
-
-    /**
      * Approve a Procurement Request as an Administrator.
      */
     public function approve($id)
-{
-    $user = Auth::user();
-    $procurementRequest = ProcurementRequest::findOrFail($id);
+    {
+        $user = Auth::user();
+        $procurementRequest = ProcurementRequest::findOrFail($id);
 
-    $procurementRequest->update(['status' => 'admin_approved', 'approved_by' => $user->id]);
+        $procurementRequest->update(['status' => 'admin_approved', 'approved_by' => $user->id]);
 
-    // ✅ Store approval history
-    RequestApprovalHistory::create([
-        'request_id' => $procurementRequest->id,
-        'approver_id' => $user->id,
-        'role' => 3, // Administrator role
-        'status' => 'approved',
-    ]);
+        // ✅ Store approval history
+        RequestApprovalHistory::create([
+            'request_id' => $procurementRequest->id,
+            'approver_id' => $user->id,
+            'role' => 3, // Administrator role
+            'status' => 'approved',
+        ]);
 
-    return redirect()->route('admin.dashboard')->with('success', 'Request approved.');
-}
+        return redirect()->route('admin.dashboard')->with('success', 'Request approved.');
+    }
 
     /**
      * Reject a Procurement Request as an Administrator.
      */
     public function reject(Request $request, $id)
-{
-    $user = Auth::user();
-    $procurementRequest = ProcurementRequest::findOrFail($id);
-    $remarks = strip_tags($request->input('remarks'));
+    {
+        $user = Auth::user();
+        $procurementRequest = ProcurementRequest::findOrFail($id);
+        $remarks = strip_tags($request->input('remarks'));
 
-    $procurementRequest->update(['status' => 'rejected', 'remarks' => $remarks]);
+        $procurementRequest->update(['status' => 'rejected', 'remarks' => $remarks]);
 
-    // ✅ Store rejection history
-    RequestApprovalHistory::create([
-        'request_id' => $procurementRequest->id,
-        'approver_id' => $user->id,
-        'role' => 3, // Administrator role
-        'status' => 'rejected',
-        'remarks' => $remarks,
-    ]);
+        // ✅ Store rejection history
+        RequestApprovalHistory::create([
+            'request_id' => $procurementRequest->id,
+            'approver_id' => $user->id,
+            'role' => 3, // Administrator role
+            'status' => 'rejected',
+            'remarks' => $remarks,
+        ]);
 
-    return redirect()->route('admin.dashboard')->with('success', 'Request rejected.');
-}
-
+        return redirect()->route('admin.dashboard')->with('success', 'Request rejected.');
+    }
 
     public function pendingRequests()
 {
     $pendingRequests = ProcurementRequest::where('status', 'supervisor_approved')
                         ->where('needs_admin_approval', true)
-                        ->with('user') // ✅ Eager load the user
+                        ->with('requestor') // ✅ Ensure requestor is loaded
                         ->get();
+
+    // dd($pendingRequests); // 🔴 Debugging: Check if requestor data exists
 
     return view('admin.pending_requests', compact('pendingRequests'));
 }

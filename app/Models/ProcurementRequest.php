@@ -24,21 +24,14 @@ class ProcurementRequest extends Model
     ];
 
     /**
-     * Relationship: User who created the request (Requestor)
+     * Relationship: Requestor (User who created the request)
      */
     public function requestor()
     {
-        return $this->belongsTo(User::class, 'requested_by');
-    }
-    
-    /**
-     * Relationship: Office that made the request
-     */
-    public function officeRelation()
-    {
-        return $this->belongsTo(Office::class, 'office_id');
+        return $this->belongsTo(User::class, 'requestor_id'); // Ensure correct foreign key
     }
 
+    
     /**
      * Relationship: Items in the procurement request
      */
@@ -52,15 +45,39 @@ class ProcurementRequest extends Model
      */
     public function approvals()
     {
-        return $this->hasMany(Approval::class, 'request_id');
+        return $this->hasMany(Approval::class, 'request_id'); // ✅ Fixed incorrect foreign key
     }
 
     /**
-     * Relationship: Fetch full approval history
+     * Relationship: Purchase record (After procurement is complete)
+     */
+    public function purchases()
+    {
+        return $this->hasOne(Purchase::class, 'procurement_request_id');
+    }
+
+    /**
+     * Relationship: User who last approved the request
+     */
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Relationship: Office that made the request (Department)
+     */
+    public function officeRelation()
+    {
+        return $this->belongsTo(Office::class, 'office_id'); // ✅ Fix department relation
+    }
+
+    /**
+     * Relationship: Fetch full approval history (New table)
      */
     public function approvalHistory()
     {
-        return $this->hasMany(RequestApprovalHistory::class, 'request_id');
+        return $this->hasMany(RequestApprovalHistory::class, 'request_id'); // ✅ Tracks full approval history
     }
 
     /**
@@ -93,5 +110,13 @@ class ProcurementRequest extends Model
     public function scopeComptrollerApproved($query)
     {
         return $query->where('status', 'comptroller_approved');
+    }
+
+    /**
+     * Scope: Fetch requests made by a specific user
+     */
+    public function scopeByRequestor($query, $userId)
+    {
+        return $query->where('requested_by', $userId);
     }
 }

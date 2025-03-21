@@ -163,5 +163,12 @@ class ProcurementRequestController extends Controller
 
     return view('staff.create', compact('user', 'existingItems'));
 }
+public function getRequestItems($id)
+{
+    $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
+
+    return response()->json($procurementRequest->items);
+}
+
 
 }

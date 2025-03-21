@@ -116,6 +116,9 @@ Route::middleware(['auth', 'role:0'])->prefix('staff')->group(function () {
     // ✅ Allow Staff to edit their requests before approval
     Route::get('/requests/{id}/edit', [ProcurementRequestController::class, 'edit'])->name('staff.requests.edit');
     Route::put('/requests/{id}', [ProcurementRequestController::class, 'update'])->name('staff.requests.update');
+
+   
+
 });
 
 

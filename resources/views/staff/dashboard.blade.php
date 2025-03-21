@@ -62,10 +62,14 @@
                                             {{ ucfirst($request->status) }}
                                         </span>
                                     </td>
-                                    <td>{{ $request->approved_by ?? 'N/A' }}</td>
+                                    <td>
+                                        {{ $request->approver ? $request->approver->firstname . ' ' . $request->approver->lastname : 'N/A' }}
+                                    </td>       
                                     <td>{{ $request->remarks ?? 'No remarks' }}</td>
                                     <td>
-                                        <button onclick="viewItems({{ $request->id }})" class="btn btn-primary btn-sm">View</button>
+                                        <button onclick="viewItems({{ $request->id }})" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal">
+                                            View
+                                        </button>
                                     </td>
                                 </tr>
                             @empty
@@ -86,13 +90,42 @@
     </div>
 </div>
 
+<!-- View Items Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalLabel">Requested Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-items-container">
+                        <tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function viewItems(requestId) {
-    fetch(`/staff/request/${requestId}/items`)
+    let container = document.getElementById('modal-items-container');
+    container.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>'; // Show loading
+
+    fetch(`/staff/requests/${requestId}/items`)
         .then(response => response.json())
         .then(data => {
-            let container = document.getElementById('modal-items-container');
-            container.innerHTML = '';
+            container.innerHTML = ''; // Clear the loading text
 
             if (data.length === 0) {
                 container.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No items found</td></tr>';
@@ -102,15 +135,13 @@ function viewItems(requestId) {
                         <tr>
                             <td>${item.item_name}</td>
                             <td>${item.quantity}</td>
-                            <td>${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td>${parseFloat(item.total_price).toFixed(2)}</td>
+                            <td>${parseFloat(item.unit_price || 0).toFixed(2)}</td>
+                            <td>${(item.quantity * parseFloat(item.unit_price || 0)).toFixed(2)}</td>
                         </tr>
                     `;
                     container.insertAdjacentHTML('beforeend', row);
                 });
             }
-
-            new bootstrap.Modal(document.getElementById('viewModal')).show();
         })
         .catch(error => console.error('Error fetching items:', error));
 }

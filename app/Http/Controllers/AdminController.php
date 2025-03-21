@@ -56,6 +56,7 @@ class AdminController extends Controller
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => 3, // Administrator role
+            'remarks' => 'Approved by Administrator',
             'status' => 'approved',
         ]);
 
@@ -92,7 +93,6 @@ class AdminController extends Controller
                         ->with('requestor') // ✅ Ensure requestor is loaded
                         ->get();
 
-    // dd($pendingRequests); // 🔴 Debugging: Check if requestor data exists
 
     return view('admin.pending_requests', compact('pendingRequests'));
 }

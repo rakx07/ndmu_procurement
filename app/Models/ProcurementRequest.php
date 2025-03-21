@@ -12,6 +12,7 @@ class ProcurementRequest extends Model
     protected $table = 'procurement_requests'; // ✅ Ensures Laravel uses the correct table name
 
     protected $fillable = [
+        'requestor_id', // 🔥 Change this to match the database column
         'requested_by', 
         'office', 
         'office_id',

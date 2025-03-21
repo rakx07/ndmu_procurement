@@ -10,7 +10,7 @@ class CreateApprovalsTable extends Migration
     {
         Schema::create('approvals', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('request_id');
+            $table->unsignedBigInteger('office_req_id');
             $table->unsignedBigInteger('approver_id');
             $table->integer('role'); // Keep as integer (0 = Staff, 2 = Supervisor, etc.)
 
@@ -27,7 +27,7 @@ class CreateApprovalsTable extends Migration
             $table->text('remarks')->nullable();
             $table->timestamps();
 
-            $table->foreign('request_id')->references('id')->on('procurement_requests')->onDelete('cascade');
+            $table->foreign('office_req_id')->references('id')->on('procurement_requests')->onDelete('cascade');
             $table->foreign('approver_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

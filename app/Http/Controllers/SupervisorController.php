@@ -63,7 +63,7 @@ class SupervisorController extends Controller
 
         // Store approval record
         Approval::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => $user->role, // ✅ Use role ID
             'status' => 'supervisor_approved',
@@ -71,7 +71,7 @@ class SupervisorController extends Controller
 
         // Store approval history
         RequestApprovalHistory::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => 2, // Supervisor role
             'status' => 'approved',
@@ -105,7 +105,7 @@ class SupervisorController extends Controller
 
         // Store rejection record
         Approval::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => $user->role, // ✅ Use role ID
             'status' => 'rejected',
@@ -114,7 +114,7 @@ class SupervisorController extends Controller
 
         // Store rejection history
         RequestApprovalHistory::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => 2, // Supervisor role
             'status' => 'rejected',

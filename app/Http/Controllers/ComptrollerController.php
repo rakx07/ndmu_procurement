@@ -69,7 +69,7 @@ class ComptrollerController extends Controller
 
     // ✅ Store approval history
     RequestApprovalHistory::create([
-        'request_id' => $procurementRequest->id,
+        'office_req_id' => $procurementRequest->id,
         'approver_id' => $user->id,
         'role' => 4, // Comptroller role
         'status' => 'approved',

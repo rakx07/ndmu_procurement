@@ -67,7 +67,7 @@ class ProcurementRequestController extends Controller
 
         foreach ($request->items as $item) {
             ProcurementRequestItem::create([
-                'procurement_request_id' => $procurementRequest->id,
+                'procurement_office_req_id' => $procurementRequest->id,
                 'item_name' => $item['item_name'],
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'] ?? 0,
@@ -113,7 +113,7 @@ class ProcurementRequestController extends Controller
     ]);
 
     Approval::create([
-        'request_id' => $procurementRequest->id,
+        'office_req_id' => $procurementRequest->id,
         'approver_id' => $user->id,
         'role' => $user->role,
         'status' => 'approved',
@@ -138,7 +138,7 @@ class ProcurementRequestController extends Controller
         ]);
 
         Approval::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => $user->role,
             'status' => 'rejected',

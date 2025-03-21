@@ -10,7 +10,7 @@ class ProcurementItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'request_id', 
+        'office_req_id', 
         'item_name', 
         'quantity', 
         'unit_price', 
@@ -27,7 +27,7 @@ class ProcurementItem extends Model
      */
     public function procurementRequest()
     {
-        return $this->belongsTo(ProcurementRequest::class, 'request_id');
+        return $this->belongsTo(ProcurementRequest::class, 'office_req_id');
     }
 
     /**

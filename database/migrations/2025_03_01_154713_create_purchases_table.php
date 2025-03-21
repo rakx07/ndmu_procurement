@@ -9,7 +9,7 @@ class CreatePurchasesTable extends Migration
     {
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('request_id');
+            $table->unsignedBigInteger('office_req_id');
             $table->unsignedBigInteger('purchasing_officer_id');
             $table->string('supplier_name');
             $table->string('supplier_contact');
@@ -19,7 +19,7 @@ class CreatePurchasesTable extends Migration
             $table->string('invoice_file')->nullable();
             $table->timestamps();
 
-            $table->foreign('request_id')->references('id')->on('procurement_requests')->onDelete('cascade');
+            $table->foreign('office_req_id')->references('id')->on('procurement_requests')->onDelete('cascade');
             $table->foreign('purchasing_officer_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

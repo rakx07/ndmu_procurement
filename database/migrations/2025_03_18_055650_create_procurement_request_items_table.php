@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('procurement_request_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('procurement_request_id')->constrained('procurement_requests')->onDelete('cascade');
+            $table->foreignId('procurement_office_req_id')->constrained('procurement_requests')->onDelete('cascade');
             $table->string('item_name');
             $table->integer('quantity');
             $table->decimal('unit_price', 10, 2)->default(0);

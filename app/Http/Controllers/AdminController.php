@@ -54,7 +54,7 @@ class AdminController extends Controller
 
         // ✅ Store approval history (No changes made)
         RequestApprovalHistory::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => 3, // Administrator role
             'remarks' => 'Approved by Administrator',
@@ -63,7 +63,7 @@ class AdminController extends Controller
 
         // ✅ Fix: Ensure the status stored in `approvals` matches ENUM values
         Approval::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => $user->role, // ✅ Use role ID
             'status' => 'admin_approved', // ✅ Ensure this is in ENUM list
@@ -88,7 +88,7 @@ class AdminController extends Controller
 
         // ✅ Store rejection history
         RequestApprovalHistory::create([
-            'request_id' => $procurementRequest->id,
+            'office_req_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => 3, // Administrator role
             'status' => 'rejected',

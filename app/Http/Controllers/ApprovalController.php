@@ -31,7 +31,7 @@ class ApprovalController extends Controller
         $procurementRequest = ProcurementRequest::findOrFail($requestId);
 
         // ✅ Prevent duplicate approvals
-        $existingApproval = RequestApprovalHistory::where('request_id', $requestId)
+        $existingApproval = RequestApprovalHistory::where('office_req_id', $requestId)
             ->where('approver_id', $user->id)
             ->where('role', $role)
             ->exists();
@@ -48,7 +48,7 @@ class ApprovalController extends Controller
 
         // ✅ Create Approval History
         RequestApprovalHistory::create([
-            'request_id' => $requestId,
+            'office_req_id' => $requestId,
             'approver_id' => $user->id,
             'role' => $role,
             'status' => 'approved',
@@ -70,7 +70,7 @@ class ApprovalController extends Controller
         $remarks = $request->input('remarks') ?? 'No remarks provided';
 
         // ✅ Prevent duplicate rejections
-        $existingRejection = RequestApprovalHistory::where('request_id', $requestId)
+        $existingRejection = RequestApprovalHistory::where('office_req_id', $requestId)
             ->where('approver_id', $user->id)
             ->where('role', $user->role)
             ->where('status', 'rejected')
@@ -88,7 +88,7 @@ class ApprovalController extends Controller
 
         // ✅ Create Rejection History
         RequestApprovalHistory::create([
-            'request_id' => $requestId,
+            'office_req_id' => $requestId,
             'approver_id' => $user->id,
             'role' => $user->role,
             'status' => 'rejected',

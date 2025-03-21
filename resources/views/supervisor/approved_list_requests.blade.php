@@ -23,7 +23,7 @@
                 <tbody>
                     @foreach($approvedRequests as $request)
                         <tr class="border border-gray-300 hover:bg-gray-100">
-                            <td class="px-4 py-2 border">{{ $request->request_id }}</td>
+                            <td class="px-4 py-2 border">{{ $request->office_req_id }}</td>
                             <td class="px-4 py-2 border">{{ $request->requestor->firstname }} {{ $request->requestor->lastname }}</td>
                             <td class="px-4 py-2 border">
                                 <span class="px-2 py-1 text-white text-sm font-semibold rounded bg-green-500">
@@ -35,7 +35,7 @@
                             </td>
                             <td class="px-4 py-2 border">{{ $request->created_at->format('Y-m-d H:i:s') }}</td>
                             <td class="px-4 py-2 border">
-                                <button onclick="viewItems({{ $request->request_id }})" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <button onclick="viewItems({{ $request->office_req_id }})" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     View Items
                                 </button>
                             </td>

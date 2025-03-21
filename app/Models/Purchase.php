@@ -10,12 +10,12 @@ class Purchase extends Model
     use HasFactory;
 
     protected $fillable = [
-        'request_id', 'purchasing_officer_id', 'supplier_name', 'supplier_contact', 'purchased_date', 'total_amount', 'purchase_status', 'invoice_file'
+        'office_req_id', 'purchasing_officer_id', 'supplier_name', 'supplier_contact', 'purchased_date', 'total_amount', 'purchase_status', 'invoice_file'
     ];
 
     public function procurementRequest()
     {
-        return $this->belongsTo(ProcurementRequest::class, 'request_id');
+        return $this->belongsTo(ProcurementRequest::class, 'office_req_id');
     }
 
     public function purchasingOfficer()

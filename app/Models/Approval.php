@@ -10,14 +10,14 @@ class Approval extends Model
     use HasFactory;
 
     protected $fillable = [
-        'request_id', 'approver_id', 'role', 'status', 'remarks'
+        'office_req_id', 'approver_id', 'role', 'status', 'remarks'
     ];
 
     public $timestamps = true; // ✅ Ensure Laravel automatically updates timestamps
 
     public function procurement_request()
     {
-        return $this->belongsTo(ProcurementRequest::class, 'request_id');
+        return $this->belongsTo(ProcurementRequest::class, 'office_req_id');
     }
 
     public function approver()
@@ -32,7 +32,7 @@ class Approval extends Model
             ProcurementRequest::class,
             'id',          // Foreign key in `procurement_requests`
             'id',          // Primary key in `users`
-            'request_id',  // Foreign key in `approvals`
+            'office_req_id',  // Foreign key in `approvals`
             'requestor_id' // Foreign key in `procurement_requests`
         );
     }
@@ -44,7 +44,7 @@ class Approval extends Model
 
     public function scopeForRequest($query, $requestId)
     {
-        return $query->where('request_id', $requestId);
+        return $query->where('office_req_id', $requestId);
     }
 
     public function scopeByRole($query, $role)

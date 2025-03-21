@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('procurement_items', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('request_id')->nullable(); // ✅ Make `request_id` nullable
+            $table->unsignedBigInteger('office_req_id')->nullable(); // ✅ Make `office_req_id` nullable
             $table->string('item_name');
             $table->integer('quantity');
             $table->decimal('unit_price', 10, 2);
@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->timestamps();
 
             // ✅ Keep Foreign Keys (Ensure `onDelete('cascade')` works properly)
-            $table->foreign('request_id')->references('id')->on('procurement_requests')->onDelete('cascade');
+            $table->foreign('office_req_id')->references('id')->on('procurement_requests')->onDelete('cascade');
             $table->foreign('office_id')->references('id')->on('offices')->onDelete('cascade');
         });
     }

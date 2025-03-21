@@ -38,7 +38,7 @@ class ProcurementRequest extends Model
      */
     public function items()
     {
-        return $this->hasMany(ProcurementRequestItem::class, 'procurement_request_id');
+        return $this->hasMany(ProcurementRequestItem::class, 'procurement_office_req_id');
     }
 
     /**
@@ -46,7 +46,7 @@ class ProcurementRequest extends Model
      */
     public function approvals()
     {
-        return $this->hasMany(Approval::class, 'request_id'); // ✅ Fixed incorrect foreign key
+        return $this->hasMany(Approval::class, 'office_req_id'); // ✅ Fixed incorrect foreign key
     }
 
     /**
@@ -54,7 +54,7 @@ class ProcurementRequest extends Model
      */
     public function purchases()
     {
-        return $this->hasOne(Purchase::class, 'procurement_request_id');
+        return $this->hasOne(Purchase::class, 'procurement_office_req_id');
     }
 
     /**
@@ -78,7 +78,7 @@ class ProcurementRequest extends Model
      */
     public function approvalHistory()
     {
-        return $this->hasMany(RequestApprovalHistory::class, 'request_id'); // ✅ Tracks full approval history
+        return $this->hasMany(RequestApprovalHistory::class, 'office_req_id'); // ✅ Tracks full approval history
     }
 
     /**

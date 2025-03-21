@@ -13,7 +13,7 @@ class RequestApprovalHistory extends Model
     protected $table = 'request_approvals_history'; 
 
     protected $fillable = [
-        'request_id',
+        'office_req_id',
         'approver_id',
         'role',
         'status',
@@ -22,7 +22,7 @@ class RequestApprovalHistory extends Model
 
     public function request()
     {
-        return $this->belongsTo(ProcurementRequest::class, 'request_id');
+        return $this->belongsTo(ProcurementRequest::class, 'office_req_id');
     }
 
     public function approver()

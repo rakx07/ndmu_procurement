@@ -162,17 +162,26 @@ class SupervisorController extends Controller
      * Fetch items of an approved Procurement Request.
      */
     public function getApprovedRequestItems($id)
-    {
-        $user = Auth::user();
-        $procurementRequest = ProcurementRequest::with('items')->findOrFail($id);
+{
+    $user = Auth::user();
+    
+    $procurementRequest = ProcurementRequest::with('items', 'requestor')->findOrFail($id);
 
-        // Ensure the Supervisor can only view their assigned staff's approved requests
-        if ($procurementRequest->approved_by !== $user->id) {
-            return response()->json(['error' => 'Unauthorized access'], 403);
-        }
+    // ✅ Define access conditions:
+    $isRequestor = $procurementRequest->requestor_id === $user->id; // The staff who created it
+    $isSupervisor = $procurementRequest->requestor->supervisor_id === $user->id; // Supervisor assigned to the staff
+    $isComptroller = $user->role === 4; // Comptroller (Role ID: 4) can view all
+    $isAdministrator = $user->role === 3; // Administrator (Role ID: 3) can view all
+    $isSameOffice = $procurementRequest->office_id === $user->office_id; // Users in the same office can view
 
-        return response()->json($procurementRequest->items);
+    // ✅ Allow access if the user meets at least one of these conditions
+    if (!$isRequestor && !$isSupervisor && !$isComptroller && !$isAdministrator && !$isSameOffice) {
+        return response()->json(['error' => 'Unauthorized access'], 403);
     }
+
+    return response()->json($procurementRequest->items);
+}
+
 
     /**
      * List all rejected requests by the Supervisor.

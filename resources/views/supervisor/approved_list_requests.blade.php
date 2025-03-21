@@ -21,21 +21,25 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($approvedRequests as $request)
+                    @foreach($approvedRequests as $procurementRequest)
                         <tr class="border border-gray-300 hover:bg-gray-100">
-                            <td class="px-4 py-2 border">{{ $request->office_req_id }}</td>
-                            <td class="px-4 py-2 border">{{ $request->requestor->firstname }} {{ $request->requestor->lastname }}</td>
+                            <td class="px-4 py-2 border">{{ $procurementRequest->office_req_id }}</td>
+                            <td class="px-4 py-2 border">
+                                {{ $procurementRequest->requestor->firstname ?? 'N/A' }} 
+                                {{ $procurementRequest->requestor->lastname ?? '' }}
+                            </td>
                             <td class="px-4 py-2 border">
                                 <span class="px-2 py-1 text-white text-sm font-semibold rounded bg-green-500">
-                                    {{ ucfirst($request->status) }}
+                                    {{ ucfirst($procurementRequest->status) }}
                                 </span>
                             </td>
                             <td class="px-4 py-2 border">
-                                {{ $request->remarks ?? 'N/A' }}
+                                {{ $procurementRequest->remarks ?? 'N/A' }}
                             </td>
-                            <td class="px-4 py-2 border">{{ $request->created_at->format('Y-m-d H:i:s') }}</td>
+                            <td class="px-4 py-2 border">{{ $procurementRequest->created_at->format('Y-m-d H:i:s') }}</td>
                             <td class="px-4 py-2 border">
-                                <button onclick="viewItems({{ $request->office_req_id }})" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <button onclick="viewItems({{ $procurementRequest->office_req_id }})" 
+                                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     View Items
                                 </button>
                             </td>
@@ -70,7 +74,7 @@
 
 <script>
 function viewItems(requestId) {
-    fetch(`/supervisor/approved-request/${requestId}/items`)
+    fetch(`/supervisor/approved-request/${requestId}/items`)  // ✅ Fixed fetch URL
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -81,16 +85,16 @@ function viewItems(requestId) {
             let container = document.getElementById('modal-items-container');
             container.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 container.innerHTML = '<tr><td colspan="4" class="text-center">No items found</td></tr>';
             } else {
                 data.forEach(item => {
                     let row = `
                         <tr>
-                            <td class="border px-2 py-1">${item.item_name}</td>
-                            <td class="border px-2 py-1">${item.quantity}</td>
-                            <td class="border px-2 py-1">${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td class="border px-2 py-1">${parseFloat(item.total_price).toFixed(2)}</td>
+                            <td class="border px-2 py-1">${item.item_name ?? 'N/A'}</td>
+                            <td class="border px-2 py-1">${item.quantity ?? 0}</td>
+                            <td class="border px-2 py-1">${parseFloat(item.unit_price || 0).toFixed(2)}</td>
+                            <td class="border px-2 py-1">${parseFloat(item.total_price || 0).toFixed(2)}</td>
                         </tr>
                     `;
                     container.insertAdjacentHTML('beforeend', row);
@@ -99,7 +103,12 @@ function viewItems(requestId) {
 
             document.getElementById('viewModal').classList.remove('hidden');
         })
-        .catch(error => console.error('Error fetching items:', error));
+        .catch(error => {
+            console.error('Error fetching items:', error);
+            document.getElementById('modal-items-container').innerHTML = `
+                <tr><td colspan="4" class="text-center text-red-500">Failed to load items.</td></tr>
+            `;
+        });
 }
 
 function hideModal() {

@@ -33,7 +33,7 @@
                 <tr class="border">
                     <td class="px-4 py-2 border">{{ $key + 1 }}</td>
                     <td class="px-4 py-2 border">{{ $request->id }}</td>
-                    <td class="px-4 py-2 border">{{ optional($request->requestor)->name ?? 'N/A' }}</td> <!-- ✅ Fixed -->
+                    <td class="px-4 py-2 border">{{ $request->requestor ? $request->requestor->full_name : 'N/A' }}</td> <!-- ✅ Fixed -->
                     <td class="px-4 py-2 border">{{ optional($request->officeRelation)->name ?? 'N/A' }}</td> <!-- ✅ Fixed -->
                     <td class="px-4 py-2 border">{{ $request->item_description ?? 'N/A' }}</td>
                     <td class="px-4 py-2 border text-yellow-500 font-bold">Pending</td>

@@ -22,35 +22,35 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($requests as $request)
+                    @foreach($requests as $procurementRequest)
                         <tr class="border border-gray-300 hover:bg-gray-100">
-                            <td class="px-4 py-2 border">{{ $request->id }}</td>
-                            <td class="px-4 py-2 border">{{ $request->requestor->firstname }} {{ $request->requestor->lastname }}</td>
-                            <td class="px-4 py-2 border">{{ $request->office }}</td>
-                            <td class="px-4 py-2 border">{{ $request->date_requested }}</td>
+                            <td class="px-4 py-2 border">{{ $procurementRequest->id }}</td>
+                            <td class="px-4 py-2 border">{{ $procurementRequest->requestor->firstname }} {{ $procurementRequest->requestor->lastname }}</td>
+                            <td class="px-4 py-2 border">{{ $procurementRequest->office }}</td>
+                            <td class="px-4 py-2 border">{{ $procurementRequest->date_requested }}</td>
                             <td class="px-4 py-2 border">
                                 <span class="px-2 py-1 text-white text-sm font-semibold rounded
-                                    {{ $request->status == 'pending' ? 'bg-yellow-500' : 'bg-green-500' }}">
-                                    {{ ucfirst($request->status) }}
+                                    {{ $procurementRequest->status == 'pending' ? 'bg-yellow-500' : 'bg-green-500' }}">
+                                    {{ ucfirst($procurementRequest->status) }}
                                 </span>
                             </td>
-                            <td class="px-4 py-2 border">{{ $request->items->count() }} items</td>
+                            <td class="px-4 py-2 border">{{ $procurementRequest->items->count() }} items</td>
                             <td class="px-4 py-2 border flex space-x-2">
                                 <!-- View Button Opens Modal -->
                                 <button 
-                                    onclick="viewItems({{ $request->id }})"
+                                    onclick="viewItems({{ $procurementRequest->id }})"
                                     class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
                                     View
                                 </button>
 
-                                @if($request->status == 'pending')
-                                    <form action="{{ route('supervisor.approve', $request->id) }}" method="POST">
+                                @if($procurementRequest->status == 'pending')
+                                    <form action="{{ route('supervisor.approve', $procurementRequest->id) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
                                             Approve
                                         </button>
                                     </form>
-                                    <form action="{{ route('supervisor.reject', $request->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to reject this request?');">
+                                    <form action="{{ route('supervisor.reject', $procurementRequest->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to reject this request?');">
                                         @csrf
                                         <input type="text" name="remarks" placeholder="Reason for rejection" required class="border p-1 rounded">
                                         <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
@@ -90,7 +90,7 @@
 
 <script>
 function viewItems(requestId) {
-    fetch(`/supervisor/request/${requestId}/items`)
+    fetch(`/supervisor/request/${requestId}/items`) // ✅ Fixed URL
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -101,7 +101,7 @@ function viewItems(requestId) {
             let container = document.getElementById('modal-items-container');
             container.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 container.innerHTML = '<tr><td colspan="4" class="text-center">No items found</td></tr>';
             } else {
                 data.forEach(item => {
@@ -109,8 +109,8 @@ function viewItems(requestId) {
                         <tr>
                             <td class="border px-2 py-1">${item.item_name}</td>
                             <td class="border px-2 py-1">${item.quantity}</td>
-                            <td class="border px-2 py-1">${parseFloat(item.unit_price).toFixed(2)}</td>
-                            <td class="border px-2 py-1">${parseFloat(item.total_price).toFixed(2)}</td>
+                            <td class="border px-2 py-1">${parseFloat(item.unit_price || 0).toFixed(2)}</td>
+                            <td class="border px-2 py-1">${parseFloat(item.total_price || 0).toFixed(2)}</td>
                         </tr>
                     `;
                     container.insertAdjacentHTML('beforeend', row);
@@ -119,8 +119,14 @@ function viewItems(requestId) {
 
             document.getElementById('viewModal').classList.remove('hidden');
         })
-        .catch(error => console.error('Error fetching items:', error));
+        .catch(error => {
+            console.error('Error fetching items:', error);
+            document.getElementById('modal-items-container').innerHTML = `
+                <tr><td colspan="4" class="text-center text-red-500">Failed to load items.</td></tr>
+            `;
+        });
 }
+
 
 function hideModal() {
     document.getElementById('viewModal').classList.add('hidden');

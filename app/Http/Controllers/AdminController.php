@@ -52,7 +52,7 @@ class AdminController extends Controller
 
         $procurementRequest->update(['status' => 'admin_approved', 'approved_by' => $user->id]);
 
-        // ✅ Store approval history
+        // ✅ Store approval history (No changes made)
         RequestApprovalHistory::create([
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
@@ -61,14 +61,19 @@ class AdminController extends Controller
             'status' => 'approved',
         ]);
 
+        // ✅ Fix: Ensure the status stored in `approvals` matches ENUM values
         Approval::create([
             'request_id' => $procurementRequest->id,
             'approver_id' => $user->id,
             'role' => $user->role, // ✅ Use role ID
-            'status' => 'admin_approved',
+            'status' => 'admin_approved', // ✅ Ensure this is in ENUM list
+            'created_at' => now(), // ✅ Explicit timestamps to prevent issues
+            'updated_at' => now(),
         ]);
+
         return redirect()->route('admin.dashboard')->with('success', 'Request approved.');
-    }
+}
+
 
     /**
      * Reject a Procurement Request as an Administrator.

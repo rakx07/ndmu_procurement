@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProcurementRequest;
 use App\Models\RequestApprovalHistory;
+use App\Models\Approval;
 use App\Models\User;
 
 class AdminController extends Controller
@@ -60,6 +61,12 @@ class AdminController extends Controller
             'status' => 'approved',
         ]);
 
+        Approval::create([
+            'request_id' => $procurementRequest->id,
+            'approver_id' => $user->id,
+            'role' => $user->role, // ✅ Use role ID
+            'status' => 'admin_approved',
+        ]);
         return redirect()->route('admin.dashboard')->with('success', 'Request approved.');
     }
 

@@ -109,11 +109,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
-                        <i class="fas fa-user"></i> <span class="nav-text">Profile</span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('purchasing_officer.create') ? 'active' : '' }}" href="{{ route('purchasing_officer.create') }}">
                         <i class="fas fa-plus-circle"></i> <span class="nav-text">Create Item</span>
                     </a>
@@ -123,9 +118,17 @@
                         <i class="fas fa-list"></i> <span class="nav-text">Manage Categories</span>
                     </a>
                 </li>
+                <!-- <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
+                        <i class="fas fa-user"></i> <span class="nav-text">Profile</span>
+                    </a>
+                </li> -->
             </ul>
         </div>
         <div class="mt-auto p-3">
+        <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
+                        <i class="fas fa-user"></i> <span class="nav-text">Profile</span>
+                    </a>
             <a class="nav-link text-danger" href="{{ route('logout') }}" 
                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Logout</span>

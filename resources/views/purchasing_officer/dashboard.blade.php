@@ -46,14 +46,39 @@
                 @foreach($procurementRequests as $request)
                 <tr>
                     <td>{{ $request->id }}</td>
-                    <td>{{ $request->requestor->name }}</td>
+
+                    <!-- ✅ Correctly display the Requestor (Staff who made the request) -->
+                    <td>{{ optional($request->requestor)->name }}</td>
+
                     <td>{{ $request->office }}</td>
                     <td>{{ $request->date_requested }}</td>
-                    <td><span class="badge bg-info">{{ ucfirst($request->status) }}</span></td>
-                    <td>{{ $request->approved_by }}</td>
-                    <td>{{ $request->remarks }}</td>
+
+                    <!-- ✅ Status Badge -->
+                    <td><span class="badge bg-info">{{ ucfirst(str_replace('_', ' ', $request->status)) }}</span></td>
+
+                    <!-- ✅ Display Approvers' Names -->
                     <td>
-                        <a href="#" class="btn btn-primary btn-sm">View</a>
+                        @php
+                            $approverNames = collect();
+                            foreach ($request->approvals as $approval) {
+                                if ($approval->approver) {
+                                    $approverNames->push($approval->approver->name);
+                                }
+                            }
+                        @endphp
+                        {{ $approverNames->isNotEmpty() ? $approverNames->implode(', ') : 'N/A' }}
+                    </td>
+
+                    <td>{{ $request->remarks }}</td>
+
+                    <td>
+                        <!-- ✅ View Items Button (Triggers Modal) -->
+                        <button class="btn btn-sm btn-primary view-items-btn" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#viewItemsModal" 
+                            data-request-id="{{ $request->id }}">
+                            View
+                        </button>
                     </td>
                 </tr>
                 @endforeach
@@ -61,4 +86,72 @@
         </table>
     </div>
 </div>
+
+<!-- ✅ Modal for Viewing Request Items -->
+<div class="modal fade" id="viewItemsModal" tabindex="-1" aria-labelledby="viewItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewItemsModalLabel">Request Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-items-body">
+                        <!-- Data will be loaded here via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ JavaScript for Fetching Modal Data -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById('viewItemsModal');
+        const modalTitle = document.getElementById('viewItemsModalLabel');
+        const modalBody = document.getElementById('modal-items-body');
+
+        document.querySelectorAll('.view-items-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const requestId = this.getAttribute('data-request-id');
+
+                // Update modal title
+                modalTitle.textContent = `Request Items - ID #${requestId}`;
+
+                // Fetch items via AJAX
+                fetch(`/procurement-requests/${requestId}/items`)
+                    .then(response => response.json())
+                    .then(data => {
+                        modalBody.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                modalBody.innerHTML += `
+                                    <tr>
+                                        <td>${item.item_name}</td>
+                                        <td>${item.description || 'N/A'}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>${item.unit}</td>
+                                    </tr>
+                                `;
+                            });
+                        } else {
+                            modalBody.innerHTML = '<tr><td colspan="4" class="text-center">No items found.</td></tr>';
+                        }
+                    })
+                    .catch(error => console.error('Error fetching items:', error));
+            });
+        });
+    });
+</script>
+
 @endsection

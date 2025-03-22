@@ -211,6 +211,8 @@ Route::middleware(['auth', 'role:3'])->group(function () {
     Route::get('/admin/request/{id}', [AdminController::class, 'show'])->name('admin.show');
     Route::patch('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
     Route::patch('/admin/reject/{id}', [AdminController::class, 'reject'])->name('admin.reject');
+    Route::get('/admin/requests/{id}/items', [AdminController::class, 'getItems']);
+
 });
 
 /*

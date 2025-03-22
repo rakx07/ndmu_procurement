@@ -99,14 +99,19 @@ class AdminController extends Controller
     }
 
     public function pendingRequests()
+    {
+        $pendingRequests = ProcurementRequest::where('status', 'supervisor_approved')
+                            ->where('needs_admin_approval', true)
+                            ->with('requestor') // ✅ Ensure requestor is loaded
+                            ->get();
+
+
+        return view('admin.pending_requests', compact('pendingRequests'));
+    }
+public function getItems($id)
 {
-    $pendingRequests = ProcurementRequest::where('status', 'supervisor_approved')
-                        ->where('needs_admin_approval', true)
-                        ->with('requestor') // ✅ Ensure requestor is loaded
-                        ->get();
-
-
-    return view('admin.pending_requests', compact('pendingRequests'));
+    $request = ProcurementRequest::with('items')->findOrFail($id);
+    return response()->json($request->items);
 }
 
 }

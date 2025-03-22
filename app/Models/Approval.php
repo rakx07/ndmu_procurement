@@ -20,11 +20,14 @@ class Approval extends Model
         return $this->belongsTo(ProcurementRequest::class, 'office_req_id');
     }
 
+    // public function approver()
+    // {
+    //     return $this->belongsTo(User::class, 'approver_id');
+    // }
     public function approver()
     {
-        return $this->belongsTo(User::class, 'approver_id');
+        return $this->belongsTo(User::class, 'approver_id'); // ✅ correct column from approvals table
     }
-
     public function requestor()
     {
         return $this->hasOneThrough(

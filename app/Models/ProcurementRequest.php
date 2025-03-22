@@ -9,11 +9,10 @@ class ProcurementRequest extends Model
 {
     use HasFactory;
 
-    protected $table = 'procurement_requests'; // ✅ Ensures Laravel uses the correct table name
+    protected $table = 'procurement_requests';
 
     protected $fillable = [
-        'requestor_id', // 🔥 Change this to match the database column
-        'requested_by', 
+        'requestor_id',
         'office', 
         'office_id',
         'date_requested', 
@@ -22,19 +21,19 @@ class ProcurementRequest extends Model
         'approved_by',
         'needs_admin_approval',
         'comptroller_approved',
+        'administrator_approved',
     ];
 
     /**
-     * Relationship: Requestor (User who created the request)
+     * Requestor (User who created the request)
      */
     public function requestor()
     {
-        return $this->belongsTo(User::class, 'requestor_id'); // Ensure correct foreign key
+        return $this->belongsTo(User::class, 'requestor_id');
     }
 
-    
     /**
-     * Relationship: Items in the procurement request
+     * Items in the procurement request
      */
     public function items()
     {
@@ -42,15 +41,15 @@ class ProcurementRequest extends Model
     }
 
     /**
-     * Relationship: Approvals (Tracks approvals for the request)
+     * Approval records related to this request
      */
     public function approvals()
     {
-        return $this->hasMany(Approval::class, 'office_req_id'); // ✅ Fixed incorrect foreign key
+        return $this->hasMany(Approval::class, 'office_req_id');
     }
 
     /**
-     * Relationship: Purchase record (After procurement is complete)
+     * Purchase record associated with the request
      */
     public function purchases()
     {
@@ -58,7 +57,7 @@ class ProcurementRequest extends Model
     }
 
     /**
-     * Relationship: User who last approved the request
+     * Final approver of the request (if applicable)
      */
     public function approver()
     {
@@ -66,58 +65,45 @@ class ProcurementRequest extends Model
     }
 
     /**
-     * Relationship: Office that made the request (Department)
+     * Department or office that made the request
      */
     public function officeRelation()
     {
-        return $this->belongsTo(Office::class, 'office_id'); // ✅ Fix department relation
+        return $this->belongsTo(Office::class, 'office_id');
     }
 
     /**
-     * Relationship: Fetch full approval history (New table)
+     * Full approval history (optional extended relation)
      */
     public function approvalHistory()
     {
-        return $this->hasMany(RequestApprovalHistory::class, 'office_req_id'); // ✅ Tracks full approval history
+        return $this->hasMany(RequestApprovalHistory::class, 'office_req_id');
     }
 
-    /**
-     * Scope: Fetch pending requests
-     */
+    // === Query Scopes ===
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope: Fetch requests approved by Supervisor
-     */
     public function scopeSupervisorApproved($query)
     {
         return $query->where('status', 'supervisor_approved');
     }
 
-    /**
-     * Scope: Fetch requests approved by Administrator
-     */
     public function scopeAdminApproved($query)
     {
         return $query->where('status', 'admin_approved');
     }
 
-    /**
-     * Scope: Fetch requests approved by Comptroller
-     */
     public function scopeComptrollerApproved($query)
     {
         return $query->where('status', 'comptroller_approved');
     }
 
-    /**
-     * Scope: Fetch requests made by a specific user
-     */
     public function scopeByRequestor($query, $userId)
     {
-        return $query->where('requested_by', $userId);
+        return $query->where('requestor_id', $userId); // ✅ updated to match the real DB field
     }
 }

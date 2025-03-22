@@ -186,7 +186,8 @@ Route::middleware(['auth', 'role:1'])->group(function () {
 
     // ✅ Route to Delete Procurement Items
     Route::delete('/purchasing-officer/{id}', [PurchasingOfficerController::class, 'destroy'])->name('purchasing_officer.destroy');
-
+    //Route addiditon
+    Route::get('/procurement-requests/{id}/items', [PurchasingOfficerController::class, 'getItems'])->name('purchasing_officer.items');
     // ✅ Item Category Management Routes
     Route::get('/item-categories', [ItemCategoryController::class, 'index'])->name('item-categories.index');
     Route::post('/item-categories', [ItemCategoryController::class, 'store'])->name('item-categories.store');

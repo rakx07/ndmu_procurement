@@ -184,9 +184,11 @@ class User extends Authenticatable
         $this->save();
     }
     public function getFullNameAttribute()
-{
-    return $this->firstname . ' ' . $this->lastname;
-}
+    {
+        $middleInitial = $this->middlename ? strtoupper(substr($this->middlename, 0, 1)) . '.' : '';
+        return "{$this->firstname} {$middleInitial} {$this->lastname}";
+    }
+    
 //Added Constant
 
 }

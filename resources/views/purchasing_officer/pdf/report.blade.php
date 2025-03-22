@@ -6,9 +6,17 @@
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
+            position: relative;
         }
-        h2, h4 {
-            margin-bottom: 0;
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            height: 60px;
+        }
+        .header h2, .header h4 {
+            margin: 0;
         }
         table {
             width: 100%;
@@ -31,18 +39,49 @@
             font-weight: bold;
             border-top: 2px solid #000;
         }
+        .signatures {
+            margin-top: 50px;
+        }
+        .signature-block {
+            display: inline-block;
+            width: 45%;
+            vertical-align: top;
+            text-align: center;
+            margin-right: 5%;
+        }
+        .qr-code {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
     </style>
 </head>
 <body>
-    <h2>Procurement Request Report</h2>
+
+    <!-- QR Code -->
+    <div class="qr-code">
+    <div class="qr-code">
+    {{ QrCode::size(80)->format('svg')->generate('Request ID: '.$request->id) }}
+</div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <img src="{{ public_path('images/university-logo.png') }}" alt="University Logo">
+        <h2>Notre Dame of Marbel University</h2>
+        <h4>Procurement Request Report</h4>
+    </div>
+
     <hr>
 
+    <!-- Request Info -->
     <p><strong>Request ID:</strong> {{ $request->id }}</p>
     <p><strong>Requestor:</strong> {{ $request->requestor?->full_name ?? 'N/A' }}</p>
     <p><strong>Office:</strong> {{ $request->office ?? 'N/A' }}</p>
     <p><strong>Date Requested:</strong> {{ $request->date_requested }}</p>
     <p><strong>Status:</strong> {{ ucfirst(str_replace('_', ' ', $request->status)) }}</p>
 
+    <!-- Items Table -->
     <div class="section-title">Requested Items:</div>
     <table>
         <thead>
@@ -60,7 +99,7 @@
             @forelse($request->items as $item)
                 @php
                     $unitPrice = floatval($item->unit_price ?? 0);
-                    $quantity = floatval($item->quantity);
+                    $quantity = floatval($item->quantity ?? 0);
                     $total = $unitPrice * $quantity;
                     $grandTotal += $total;
                 @endphp
@@ -87,5 +126,23 @@
 
     <br>
     <p><strong>Comptroller:</strong> {{ $comptrollerName }}</p>
+
+    <!-- Signatures -->
+    <div class="signatures">
+        <div class="signature-block">
+            <p>__________________________</p>
+            <p>{{ $request->requestor?->full_name ?? 'Requestor' }}</p>
+            <p><em>Requestor</em></p>
+            <p>Date: ____________________</p>
+        </div>
+
+        <div class="signature-block">
+            <p>__________________________</p>
+            <p>{{ $comptrollerName ?? 'Comptroller' }}</p>
+            <p><em>Comptroller</em></p>
+            <p>Date: ____________________</p>
+        </div>
+    </div>
+
 </body>
 </html>

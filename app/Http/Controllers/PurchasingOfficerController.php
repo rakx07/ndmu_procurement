@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ProcurementItem;
 use App\Models\ProcurementRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class PurchasingOfficerController extends Controller
 {
@@ -71,14 +72,12 @@ class PurchasingOfficerController extends Controller
     public function print($id)
 {
     $request = ProcurementRequest::with(['items', 'approvals.approver'])->findOrFail($id);
-
-    // Get Comptroller name if approved
-    $comptrollerApproval = $request->approvals->firstWhere('approver.role', 4); // Role 4 = Comptroller
+    $comptrollerApproval = $request->approvals->firstWhere('approver.role', 4);
 
     return Pdf::loadView('purchasing_officer.pdf.report', [
         'request' => $request,
         'comptrollerName' => $comptrollerApproval?->approver?->full_name ?? 'N/A',
-    
     ])->stream("Request_Report_{$id}.pdf");
 }
+
 }

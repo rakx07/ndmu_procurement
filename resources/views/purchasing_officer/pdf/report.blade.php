@@ -18,10 +18,18 @@
         th, td {
             border: 1px solid #000;
             padding: 6px;
+            text-align: left;
         }
         .section-title {
             margin-top: 20px;
             font-weight: bold;
+        }
+        .text-end {
+            text-align: right;
+        }
+        .total-row td {
+            font-weight: bold;
+            border-top: 2px solid #000;
         }
     </style>
 </head>
@@ -41,23 +49,39 @@
             <tr>
                 <th>Item Name</th>
                 <th>Description</th>
-                <th>Quantity</th>
+                <th>Qty</th>
                 <th>Unit</th>
+                <th>Unit Price</th>
+                <th>Total Price</th>
             </tr>
         </thead>
         <tbody>
+            @php $grandTotal = 0; @endphp
             @forelse($request->items as $item)
-            <tr>
-                <td>{{ $item->item_name }}</td>
-                <td>{{ $item->description ?? 'N/A' }}</td>
-                <td>{{ $item->quantity }}</td>
-                <td>{{ $item->unit ?? 'pc' }}</td>
-            </tr>
+                @php
+                    $unitPrice = floatval($item->unit_price ?? 0);
+                    $quantity = floatval($item->quantity);
+                    $total = $unitPrice * $quantity;
+                    $grandTotal += $total;
+                @endphp
+                <tr>
+                    <td>{{ $item->item_name }}</td>
+                    <td>{{ $item->description ?? 'N/A' }}</td>
+                    <td>{{ $item->quantity }}</td>
+                    <td>{{ $item->unit ?? 'pc' }}</td>
+                    <td>₱{{ number_format($unitPrice, 2) }}</td>
+                    <td>₱{{ number_format($total, 2) }}</td>
+                </tr>
             @empty
-            <tr>
-                <td colspan="4" class="text-center">No items available.</td>
-            </tr>
+                <tr>
+                    <td colspan="6" class="text-center">No items available.</td>
+                </tr>
             @endforelse
+
+            <tr class="total-row">
+                <td colspan="5" class="text-end">Grand Total</td>
+                <td>₱{{ number_format($grandTotal, 2) }}</td>
+            </tr>
         </tbody>
     </table>
 

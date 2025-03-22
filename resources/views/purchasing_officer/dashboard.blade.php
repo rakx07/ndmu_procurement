@@ -82,7 +82,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="viewItemsModal" tabindex="-1" aria-labelledby="viewItemsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="viewItemsModalLabel">Request Items</h5>
@@ -90,16 +90,18 @@
             </div>
             <div class="modal-body">
                 <table class="table table-bordered">
-                    <thead>
+                    <thead class="table-light">
                         <tr>
                             <th>Item Name</th>
                             <th>Description</th>
                             <th>Quantity</th>
                             <th>Unit</th>
+                            <th>Unit Price</th>
+                            <th>Total Price</th>
                         </tr>
                     </thead>
                     <tbody id="modal-items-body">
-                        <!-- Filled via JS -->
+                        <!-- Filled via JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -107,7 +109,7 @@
     </div>
 </div>
 
-<!-- JS for Modal -->
+<!-- JavaScript -->
 <script>
     window.addEventListener("DOMContentLoaded", function () {
         const modalTitle = document.getElementById('viewItemsModalLabel');
@@ -117,7 +119,7 @@
             button.addEventListener('click', function () {
                 const requestId = this.getAttribute('data-request-id');
                 modalTitle.textContent = `Request Items - ID #${requestId}`;
-                modalBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+                modalBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
 
                 fetch(`/procurement-requests/${requestId}/items`)
                     .then(response => response.json())
@@ -125,22 +127,28 @@
                         modalBody.innerHTML = '';
                         if (data.length > 0) {
                             data.forEach(item => {
+                                const unitPrice = parseFloat(item.unit_price || 0);
+                                const quantity = parseFloat(item.quantity || 0);
+                                const totalPrice = unitPrice * quantity;
+
                                 modalBody.innerHTML += `
                                     <tr>
                                         <td>${item.item_name}</td>
                                         <td>${item.description || 'N/A'}</td>
                                         <td>${item.quantity}</td>
                                         <td>${item.unit ?? 'pc'}</td>
+                                        <td>₱${unitPrice.toFixed(2)}</td>
+                                        <td>₱${totalPrice.toFixed(2)}</td>
                                     </tr>
                                 `;
                             });
                         } else {
-                            modalBody.innerHTML = '<tr><td colspan="4" class="text-center">No items found.</td></tr>';
+                            modalBody.innerHTML = '<tr><td colspan="6" class="text-center">No items found.</td></tr>';
                         }
                     })
                     .catch(error => {
                         console.error('Error fetching items:', error);
-                        modalBody.innerHTML = '<tr><td colspan="4" class="text-danger">Error loading items.</td></tr>';
+                        modalBody.innerHTML = '<tr><td colspan="6" class="text-danger">Error loading items.</td></tr>';
                     });
             });
         });

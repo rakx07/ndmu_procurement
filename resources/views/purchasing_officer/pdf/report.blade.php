@@ -60,10 +60,8 @@
 
     <!-- QR Code -->
     <div class="qr-code">
-    <div class="qr-code">
     {{ QrCode::size(80)->format('svg')->generate('Request ID: '.$request->id) }}
 </div>
-    </div>
 
     <!-- Header -->
     <div class="header">

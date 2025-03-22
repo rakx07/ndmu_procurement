@@ -144,8 +144,8 @@
         @yield('content')
     </div>
 
-    <!-- ✅ JavaScript -->
-    <script>
+      <!-- ✅ JavaScript -->
+      <script>
         function toggleSidebar() {
             let sidebar = document.getElementById("sidebar");
             let content = document.getElementById("main-content");
@@ -153,5 +153,8 @@
             content.classList.toggle("collapsed");
         }
     </script>
+
+    <!-- ✅ Include Bootstrap 5 JS for modal functionality -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

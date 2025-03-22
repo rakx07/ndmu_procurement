@@ -46,17 +46,10 @@
                 @foreach($procurementRequests as $request)
                 <tr>
                     <td>{{ $request->id }}</td>
-
-                    <!-- ✅ Requestor Full Name -->
                     <td>{{ $request->requestor?->full_name ?? 'N/A' }}</td>
-
                     <td>{{ $request->office ?? 'N/A' }}</td>
                     <td>{{ $request->date_requested }}</td>
-
-                    <!-- ✅ Status Badge -->
                     <td><span class="badge bg-info">{{ ucfirst(str_replace('_', ' ', $request->status)) }}</span></td>
-
-                    <!-- ✅ Approver Full Name(s) -->
                     <td>
                         @php
                             $approverNames = collect();
@@ -68,9 +61,7 @@
                         @endphp
                         {{ $approverNames->isNotEmpty() ? $approverNames->implode(', ') : 'N/A' }}
                     </td>
-
                     <td>{{ $request->remarks }}</td>
-
                     <td>
                         <button class="btn btn-sm btn-primary view-items-btn" 
                             data-bs-toggle="modal" 
@@ -86,7 +77,7 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- ✅ Modal HTML (Outside Loop) -->
 <div class="modal fade" id="viewItemsModal" tabindex="-1" aria-labelledby="viewItemsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -113,20 +104,23 @@
     </div>
 </div>
 
-<!-- JavaScript for Modal -->
+<!-- ✅ JavaScript for Modal -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    window.addEventListener("DOMContentLoaded", function () {
         const modalTitle = document.getElementById('viewItemsModalLabel');
         const modalBody = document.getElementById('modal-items-body');
 
         document.querySelectorAll('.view-items-btn').forEach(button => {
             button.addEventListener('click', function () {
                 const requestId = this.getAttribute('data-request-id');
-                modalTitle.textContent = `Request Items - ID #${requestId}`;
+                console.log("Fetching items for request ID:", requestId); // ✅ Debug log
+
                 fetch(`/procurement-requests/${requestId}/items`)
                     .then(response => response.json())
                     .then(data => {
+                        modalTitle.textContent = `Request Items - ID #${requestId}`;
                         modalBody.innerHTML = '';
+
                         if (data.length > 0) {
                             data.forEach(item => {
                                 modalBody.innerHTML += `
@@ -134,7 +128,7 @@
                                         <td>${item.item_name}</td>
                                         <td>${item.description || 'N/A'}</td>
                                         <td>${item.quantity}</td>
-                                        <td>${item.unit}</td>
+                                        <td>${item.unit ?? 'pc'}</td>
                                     </tr>
                                 `;
                             });
@@ -143,8 +137,8 @@
                         }
                     })
                     .catch(error => {
-                        modalBody.innerHTML = '<tr><td colspan="4" class="text-danger">Error loading items.</td></tr>';
                         console.error('Error fetching items:', error);
+                        modalBody.innerHTML = '<tr><td colspan="4" class="text-danger">Error loading items.</td></tr>';
                     });
             });
         });

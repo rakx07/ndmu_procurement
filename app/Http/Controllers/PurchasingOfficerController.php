@@ -13,7 +13,7 @@ class PurchasingOfficerController extends Controller
         return view('purchasing_officer.dashboard', [
             'totalRequests' => ProcurementRequest::count(),
             'pendingRequests' => ProcurementRequest::where('status', 'pending')->count(),
-            'approvedRequests' => ProcurementRequest::where('status', 'approved')->count(),
+           'approvedRequests' => ProcurementRequest::where('status', 'comptroller_approved')->count(),
             'procurementRequests' => ProcurementRequest::with(['requestor', 'approvals.approver'])->latest()->get(),
             'procurementItems' => ProcurementItem::latest()->get(),
         ]);

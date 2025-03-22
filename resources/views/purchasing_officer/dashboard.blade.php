@@ -69,6 +69,9 @@
                             data-request-id="{{ $request->id }}">
                             View
                         </button>
+                        <a href="{{ route('purchasing.print', $request->id) }}" target="_blank" class="btn btn-sm btn-secondary">
+                            Print
+                        </a>
                     </td>
                 </tr>
                 @endforeach
@@ -77,7 +80,7 @@
     </div>
 </div>
 
-<!-- ✅ Modal HTML (Outside Loop) -->
+<!-- Modal -->
 <div class="modal fade" id="viewItemsModal" tabindex="-1" aria-labelledby="viewItemsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -96,7 +99,7 @@
                         </tr>
                     </thead>
                     <tbody id="modal-items-body">
-                        <!-- AJAX-loaded data -->
+                        <!-- Filled via JS -->
                     </tbody>
                 </table>
             </div>
@@ -104,7 +107,7 @@
     </div>
 </div>
 
-<!-- ✅ JavaScript for Modal -->
+<!-- JS for Modal -->
 <script>
     window.addEventListener("DOMContentLoaded", function () {
         const modalTitle = document.getElementById('viewItemsModalLabel');
@@ -113,14 +116,13 @@
         document.querySelectorAll('.view-items-btn').forEach(button => {
             button.addEventListener('click', function () {
                 const requestId = this.getAttribute('data-request-id');
-                console.log("Fetching items for request ID:", requestId); // ✅ Debug log
+                modalTitle.textContent = `Request Items - ID #${requestId}`;
+                modalBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
 
                 fetch(`/procurement-requests/${requestId}/items`)
                     .then(response => response.json())
                     .then(data => {
-                        modalTitle.textContent = `Request Items - ID #${requestId}`;
                         modalBody.innerHTML = '';
-
                         if (data.length > 0) {
                             data.forEach(item => {
                                 modalBody.innerHTML += `

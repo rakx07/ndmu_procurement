@@ -19,6 +19,10 @@ use App\Http\Controllers\ItemCategoryController;
 use App\Http\Controllers\PurchasingOfficerController;
 use App\Http\Controllers\PhysicalPlantController;
 use App\Http\Controllers\ComptrollerController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Redirect;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -42,8 +46,8 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 Route::get('/dashboard', function () {
-    if (auth()->check()) {
-        switch (auth()->user()->role) {
+    if (Auth::check()) {
+        switch (Auth::user()->role) {
             case 0:
                 return redirect()->route('staff.dashboard'); // Staff
             case 1:
